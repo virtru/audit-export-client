@@ -14,6 +14,7 @@ class Policy:
         self.isExpireEvent = False
         self.type = ''
         self.violatedRuleIds = []
+        self.violatedRuleNames = []
         self.virtruClient = ''
         self.recipients = []
         self.timestamp = ''
@@ -46,6 +47,7 @@ class Policy:
         self.isExpireEvent = jsonin.get('isExpireEvent', False)
         self.type = jsonin.get('type', '')
         self.violatedRuleIds = jsonin.get('violatedRuleIds', None)
+        self.violatedRuleNames = jsonin.get('violatedRuleNames', None)
         self.virtruClient = jsonin.get('virtruClient', '')
         self.recipients = jsonin.get('recipients', None)
         self.timestamp = jsonin.get('timestamp', '')
@@ -104,12 +106,14 @@ class Policy:
         r28 = '"{0}"'.format(self.action.encode('utf8'))
         r29 = '"{0}"'.format(self.isNoAuthEvent)
         r30 = '"{0}"'.format(self.isForwardingDisabledEvent)
+        r31 = '"{0}"'.format(self.flatten(self.violatedRuleNames))
 
         ra = r1 + r0 + r2 + r0 + r3 + r0 + r4 + r0 + r5 + r0 + r6 + r0 + r7 + r0 + r8 + r0 + r9 + r0 + r10 + r0
         rb = r11 + r0 + r12 + r0 + r13 + r0 + r14 + r0 + r15 + r0 + r16 + r0 + r17 + r0 + r18 + r0 + r19 + r0 + r20 + r0
-        rc = r21 + r0 + r22 + r0 + r23 + r0 + r24 + r0 + r25 + r0 + r26 + r0 + r27 + r0 + r28 + r0 + r29 + r0 + r30
+        rc = r21 + r0 + r22 + r0 + r23 + r0 + r24 + r0 + r25 + r0 + r26 + r0 + r27 + r0 + r28 + r0 + r29 + r0 + r30 + r0
+        rd = r31
 
-        return ra + rb + rc
+        return ra + rb + rc + rd
 
     def tosyslog(self):
         r0 = ' '
@@ -143,12 +147,14 @@ class Policy:
         r28 = '"action={0}"'.format(self.action.encode('utf8'))
         r29 = '"isNoAuthEvent={0}"'.format(self.isNoAuthEvent)
         r30 = '"isForwardingDisabledEvent={0}"'.format(self.isForwardingDisabledEvent)
+        r31 = '"violatedRuleNames={0}"'.format(self.flatten(self.violatedRuleNames))
 
         ra = r1 + r0 + r2 + r0 + r3 + r0 + r4 + r0 + r5 + r0 + r6 + r0 + r7 + r0 + r8 + r0 + r9 + r0 + r10 + r0
         rb = r11 + r0 + r12 + r0 + r13 + r0 + r14 + r0 + r15 + r0 + r16 + r0 + r17 + r0 + r18 + r0 + r19 + r0 + r20 + r0
-        rc = r21 + r0 + r22 + r0 + r23 + r0 + r24 + r0 + r25 + r0 + r26 + r0 + r27 + r0 + r28 + r0 + r29 + r0 + r30
+        rc = r21 + r0 + r22 + r0 + r23 + r0 + r24 + r0 + r25 + r0 + r26 + r0 + r27 + r0 + r28 + r0 + r29 + r0 + r30 + r0
+        rd = r31
 
-        return ra + rb + rc
+        return ra + rb + rc + rd
 
     def flatten(self, listin):
         retval = None
