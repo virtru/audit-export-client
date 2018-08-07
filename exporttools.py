@@ -11,10 +11,10 @@ import unitattributes
 import usersettings
 import syslogclient
 import platform
-
+import os
 
 def tojson(folder, filename, jsonin):
-    fn = folder + filename
+    fn = os.path.join(folder, filename)
     with open(fn, "w") as f:
         json.dump(jsonin, f, sort_keys=True, indent=4, separators=(',', ': '))
 
@@ -30,43 +30,43 @@ def tocsv(csvfolder,
           listPolicy,
           listUnitAttributes,
           listUserSettings):
-    with open(csvfolder + 'apitoken.csv', "a") as csvApiToken:
+    with open(os.path.join(csvfolder,'apitoken.csv'), "a") as csvApiToken:
         for curr in listApiToken:
             csvApiToken.write(curr.tocsv())
             csvApiToken.write("\n")
-    with open(csvfolder + 'appidbundle.csv', "a") as csvAppIdBundle:
+    with open(os.path.join(csvfolder,'appidbundle.csv'), "a") as csvAppIdBundle:
         for curr in listAppIdBundle:
             csvAppIdBundle.write(curr.tocsv())
             csvAppIdBundle.write("\n")
-    with open(csvfolder + 'contractget.csv', "a") as csvContractGet:
+    with open(os.path.join(csvfolder,'contractget.csv'), "a") as csvContractGet:
         for curr in listContractGet:
             csvContractGet.write(curr.tocsv())
             csvContractGet.write("\n")
-    with open(csvfolder + 'dlprules.csv', "a") as csvDlpRules:
+    with open(os.path.join(csvfolder,'dlprules.csv'), "a") as csvDlpRules:
         for curr in listDlpRules:
             csvDlpRules.write(curr.tocsv())
             csvDlpRules.write("\n")
-    with open(csvfolder + 'encryptedsearchkey.csv', "a") as csvEncryptedSearch:
+    with open(os.path.join(csvfolder,'encryptedsearchkey.csv'), "a") as csvEncryptedSearch:
         for curr in listEncryptedSearch:
             csvEncryptedSearch.write(curr.tocsv())
             csvEncryptedSearch.write("\n")
-    with open(csvfolder + 'licenseinvitation.csv', "a") as csvLicenseInvitation:
+    with open(os.path.join(csvfolder,'licenseinvitation.csv'), "a") as csvLicenseInvitation:
         for curr in listLicenseInvitation:
             csvLicenseInvitation.write(curr.tocsv())
             csvLicenseInvitation.write("\n")
-    with open(csvfolder + 'organization.csv', "a") as csvOrganization:
+    with open(os.path.join(csvfolder,'organization.csv'), "a") as csvOrganization:
         for curr in listOrganization:
             csvOrganization.write(curr.tocsv())
             csvOrganization.write("\n")
-    with open(csvfolder + 'policy.csv', "a") as csvPolicy:
+    with open(os.path.join(csvfolder,'policy.csv'), "a") as csvPolicy:
         for curr in listPolicy:
             csvPolicy.write(curr.tocsv())
             csvPolicy.write("\n")
-    with open(csvfolder + 'unitattributes.csv', "a") as csvUnitAttributes:
+    with open(os.path.join(csvfolder,'unitattributes.csv'), "a") as csvUnitAttributes:
         for curr in listUnitAttributes:
             csvUnitAttributes.write(curr.tocsv())
             csvUnitAttributes.write("\n")
-    with open(csvfolder + 'usersettings.csv', "a") as csvUserSettings:
+    with open(os.path.join(csvfolder,'usersettings.csv'), "a") as csvUserSettings:
         for curr in listUserSettings:
             csvUserSettings.write(curr.tocsv())
             csvUserSettings.write("\n")
