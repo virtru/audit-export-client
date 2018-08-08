@@ -14,6 +14,7 @@ import platform
 import os
 
 def tojson(folder, filename, jsonin):
+    filename = filename.replace(':'-')
     fn = os.path.join(folder, filename)
     with open(fn, "w") as f:
         json.dump(jsonin, f, sort_keys=True, indent=4, separators=(',', ': '))
