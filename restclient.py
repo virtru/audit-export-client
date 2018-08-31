@@ -31,6 +31,7 @@ def getJson(apiTokenId, apiTokenSecret, apiHost, apiPath,apiQueryStart,apiQueryE
         'jti': nonce,
         'rsha': generateRsha(method, apiHost, apiPath, queryParams),
         'rqps': 'start,end',
+        'exp': int(time.time()+60.0)
     }
 
     encoded = jwt.encode(payload, tokenSecret, algorithm='HS256')
@@ -64,6 +65,7 @@ def getJsonBookmark(apiTokenId, apiTokenSecret, apiHost, apiPath,apiQueryStart,a
         'jti': nonce,
         'rsha': generateRsha(method, apiHost, apiPath, queryParams),
         'rqps': 'start,end',
+        'exp': int(time.time()+60.0)
     }
 
     encoded = jwt.encode(payload, tokenSecret, algorithm='HS256')
