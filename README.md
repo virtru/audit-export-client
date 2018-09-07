@@ -4,10 +4,10 @@ Python based Virtru Audit Export Client.
 Reference the support documentation for complete documentation: https://support.virtru.com/hc/en-us/sections/360001360714
 
 ## Getting started
-install pipenv using `pip`
+install pipenv using `brew`
 
 ```bash 
-pip install pipenv
+brew install pipenv
 ````
 install package dependencies
 
