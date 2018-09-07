@@ -74,15 +74,9 @@ def exportToCsv(pathToFolder, records):
 def exportToSysLog(host, port, records):
     logger = logging.getLogger('virtru-export')
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(name)s: [%(levelname)s] %(message)s')
-    syslogHandler = SysLogHandler(
+    sh = Rfc5424SysLogHandler(
         address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
-    sh = Rfc5424SysLogHandler(address='/var/run/syslog')
-    syslogHandler.setFormatter(formatter)
-    logger.addHandler(syslogHandler)
     logger.addHandler(sh)
-    logger.warn('just warning..........')
-
     for record in records:
         logger.info('%s', record)
 
