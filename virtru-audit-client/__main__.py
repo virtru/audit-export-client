@@ -1,6 +1,9 @@
 import argparse
 import utils
+import logging
+import sys
 from auditClient import AuditClient
+from requests import ConnectionError
 
 
 parser = argparse.ArgumentParser(prog='VirtruAuditExportClient',
@@ -60,7 +63,6 @@ csvFolderPath = args.csv
 syslogHost = args.sysloghost
 syslogPort = args.syslogport
 
-
 auditClient = AuditClient(apiTokenSecret, apiTokenId,
                           apiHost, apiPath)
 
@@ -79,21 +81,25 @@ hasMore = True
 iteration = 1
 
 while hasMore:
-    records = auditClient.fetchRecords(req)
-    if(jsonFolderPath):
-        utils.exportToJson(jsonFolderPath, records['docs'])
-    if(csvFolderPath):
-        utils.exportToCsv(csvFolderPath, records['docs'])
-    if(syslogHost is not None and syslogPort is not None):
-        utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
+    try:
+        records = auditClient.fetchRecords(req)
+        if(jsonFolderPath):
+            utils.exportToJson(jsonFolderPath, records['docs'])
+        if(csvFolderPath):
+            utils.exportToCsv(csvFolderPath, records['docs'])
+        if(syslogHost is not None and syslogPort is not None):
+            utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
 
-    if 'nextPageStartKey' in records:
-        req['query']['nextPageStartKey'] = records['nextPageStartKey']
-        nextPageStartKey = records['nextPageStartKey']
-    else:
-        hasMore = False
-        if nextPageStartKey:
-            utils.saveNextPgeStartKey(nextPageStartKey)
-    print('Iteration :' + str(iteration) + '\t\t' +
-          "Items: " + str(len(records['docs'])))
-    iteration += 1
+        if 'nextPageStartKey' in records:
+            req['query']['nextPageStartKey'] = records['nextPageStartKey']
+            nextPageStartKey = records['nextPageStartKey']
+        else:
+            hasMore = False
+            if nextPageStartKey:
+                utils.saveNextPgeStartKey(nextPageStartKey)
+        print('Iteration :' + str(iteration) + '\t\t' +
+              "Items: " + str(len(records['docs'])))
+        iteration += 1
+    except (FileNotFoundError, ConnectionError) as err:
+        logging.error(err)
+        sys.exit(-1)

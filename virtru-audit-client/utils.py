@@ -2,6 +2,7 @@ import configparser
 import datetime
 import os
 import json
+import sys
 import csv
 import pathlib
 import logging
@@ -27,9 +28,14 @@ class AuditTypes(Enum):
 
 
 def getConfig(configFile):
-    config = configparser.ConfigParser()
-    config.read(configFile)
-    return config['ApiInfo']
+    try:
+        config = configparser.ConfigParser()
+        with open(configFile) as f:
+            config.read_file(f)
+        return config['ApiInfo']
+    except FileNotFoundError as err:
+        logging.error(err)
+        sys.exit(-1)
 
 
 def getNextPageStartKey():
@@ -50,10 +56,12 @@ def saveNextPgeStartKey(nextPageStartKey):
 
 
 def exportToJson(pathToFolder, records):
+
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, "w") as f:
-        json.dump(records, f, sort_keys=True, indent=4, separators=(',', ': '))
+        json.dump(records, f, sort_keys=True,
+                  indent=4, separators=(',', ': '))
 
 
 def exportToCsv(pathToFolder, records):
