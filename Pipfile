@@ -6,9 +6,11 @@ name = "pypi"
 [packages]
 requests = "*"
 pyjwt = "*"
+"rfc5424-logging-handler" = "*"
 
 [dev-packages]
 pylint = "*"
+"autopep8" = "*"
 
 [requires]
 python_version = "3.7.0"

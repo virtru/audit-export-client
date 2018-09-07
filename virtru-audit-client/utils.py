@@ -7,6 +7,7 @@ import pathlib
 import logging
 from enum import Enum
 from logging.handlers import SysLogHandler
+from rfc5424logging import Rfc5424SysLogHandler
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
 
@@ -68,11 +69,14 @@ def exportToSysLog(host, port, records):
     formatter = logging.Formatter('%(name)s: [%(levelname)s] %(message)s')
     syslogHandler = SysLogHandler(
         address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
+    sh = Rfc5424SysLogHandler(address='/var/run/syslog')
     syslogHandler.setFormatter(formatter)
     logger.addHandler(syslogHandler)
+    logger.addHandler(sh)
     logger.warn('just warning..........')
+
     for record in records:
-        logger.warn('%s', record)
+        logger.info('%s', record)
 
 
 def __writeCsvFile(auditType, pathToFolder, fileName, record):
