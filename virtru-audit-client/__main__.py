@@ -41,8 +41,14 @@ parser.add_argument('--sysloghost',
 parser.add_argument('--syslogport',
                     help='Syslog port.  If a different port is required.',
                     dest='syslogport',
-                    default=None,
+                    default='514',
                     required=False)
+parser.add_argument('--bookMark, -b',
+                    help='Start from last bookmark',
+                    dest='useBookMark',
+                    default=False,
+                    required=False,
+                    action='store_true')
 
 args = parser.parse_args()
 
@@ -62,6 +68,7 @@ jsonFolderPath = args.json
 csvFolderPath = args.csv
 syslogHost = args.sysloghost
 syslogPort = args.syslogport
+useBookMark = args.useBookMark
 
 auditClient = AuditClient(apiTokenSecret, apiTokenId,
                           apiHost, apiPath)
@@ -74,7 +81,7 @@ req = {
     }
 }
 
-if(nextPageStartKey):
+if(nextPageStartKey and useBookMark):
     req['query']['nextPageStartKey'] = nextPageStartKey
 
 hasMore = True
@@ -96,9 +103,9 @@ while hasMore:
         else:
             hasMore = False
             if nextPageStartKey:
-                utils.saveNextPgeStartKey(nextPageStartKey)
+                utils.saveNextPageStartKey(nextPageStartKey)
         print('Iteration :' + str(iteration) + '\t\t' +
-              "Items: " + str(len(records['docs'])))
+              'Items: ' + str(len(records['docs'])))
         iteration += 1
     except (FileNotFoundError, ConnectionError) as err:
         logging.error(err)

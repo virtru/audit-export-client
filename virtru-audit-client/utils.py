@@ -47,7 +47,7 @@ def getNextPageStartKey():
         return bookmark['next-page-start-key']
 
 
-def saveNextPgeStartKey(nextPageStartKey):
+def saveNextPageStartKey(nextPageStartKey):
     bookMarkConfig = configparser.ConfigParser()
     bookMarkConfig['next-page-start-key'] = {
         'nextPageStartKey': nextPageStartKey}
