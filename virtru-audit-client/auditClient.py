@@ -5,7 +5,7 @@ import requests
 import jwt
 import time
 
-VJWT_TTL_SECONDS = 120
+VJWT_TTL_SECONDS = 60
 
 
 class AuditClient:
@@ -25,6 +25,7 @@ class AuditClient:
         apiUrl = self.apiHost + self.apiPath
         response = requests.get("https://" + apiUrl,
                                 params=req['query'], headers=headers)
+        response.raise_for_status()
         return response.json()
 
     def __generateVjwtString(self, req):

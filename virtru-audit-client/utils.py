@@ -8,7 +8,7 @@ import pathlib
 import logging
 from enum import Enum
 from logging.handlers import SysLogHandler
-from rfc5424logging import Rfc5424SysLogHandler
+from rfc5424logging import Rfc5424SysLogHandler, NILVALUE
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
 
@@ -78,9 +78,12 @@ def exportToSysLog(host, port, records):
         address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON, enterprise_id=22)
     logger.addHandler(sh)
     for record in records:
+        formattedRecord = {k: (NILVALUE if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
+                           for (k, v) in record.items()}
         extra = {
+            'msgid': NILVALUE,
             'structured_data': {
-                'data': record
+                'data': formattedRecord
             }
         }
         logger.info('virtru-audit-%s', record['type'], extra=extra)
