@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[scripts]
+start = "python virtru-audit-client"
+
+[packages]
+requests = "*"
+pyjwt = "*"
+"rfc5424-logging-handler" = "*"
+
+[dev-packages]
+pylint = "*"
+"autopep8" = "*"
+
+[requires]
+python_version = "3.5"
