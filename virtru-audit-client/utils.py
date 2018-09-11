@@ -75,16 +75,19 @@ def exportToSysLog(host, port, records):
     logger = logging.getLogger('virtru-export')
     logger.setLevel(logging.INFO)
     sh = Rfc5424SysLogHandler(
-        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
+        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON, enterprise_id=22)
     logger.addHandler(sh)
     for record in records:
-        logger.info('%s', record)
+        extra = {
+            'structured_data': {
+                'data': record
+            }
+        }
+        logger.info('virtru-audit-%s', record['type'], extra=extra)
 
 
 def __writeCsvFile(auditType, pathToFolder, fileName, record):
-    # validate type is part of defined types
     filePath = os.path.join(pathToFolder, fileName)
-    #mode = 'a' if os.path.exists(filePath) else 'w'
     with open(filePath, 'a', newline='') as csvfile:
         fieldnames = record.keys()
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)

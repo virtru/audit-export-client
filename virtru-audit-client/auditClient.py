@@ -5,6 +5,8 @@ import requests
 import jwt
 import time
 
+VJWT_TTL_SECONDS = 120
+
 
 class AuditClient:
     def __init__(self, apiTokenSecret, apiTokenId, apiHost, apiPath):
@@ -38,7 +40,7 @@ class AuditClient:
             'jti': nonce,
             'rsha': self.__generateRsha(method, self.apiHost, self.apiPath, queryParams),
             'rqps': ','.join(req['query'].keys()),
-            'exp': int(time.time()+120.0)
+            'exp': int(time.time()+VJWT_TTL_SECONDS)
         }
         return jwt.encode(payload, tokenSecret, algorithm='HS256')
 
