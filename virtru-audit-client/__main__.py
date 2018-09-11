@@ -86,26 +86,27 @@ if(nextPageStartKey and useBookMark):
 
 hasMore = True
 iteration = 1
+nextPageStartKey = ''
 
 while hasMore:
     try:
         records = auditClient.fetchRecords(req)
-        if(jsonFolderPath):
+        if(jsonFolderPath and records['docs']):
             utils.exportToJson(jsonFolderPath, records['docs'])
-        if(csvFolderPath):
+        if(csvFolderPath and records['docs']):
             utils.exportToCsv(csvFolderPath, records['docs'])
-        if(syslogHost is not None and syslogPort is not None):
+        if(syslogHost is not None and syslogPort is not None and records['docs']):
             utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
 
         if 'nextPageStartKey' in records:
-            req['query']['nextPageStartKey'] = records['nextPageStartKey']
             nextPageStartKey = records['nextPageStartKey']
+            req['query']['nextPageStartKey'] = nextPageStartKey
         else:
             hasMore = False
-            if nextPageStartKey:
+            if records['docs']:
+                nextPageStartKey = records['docs'][-1]['recordId']
                 utils.saveNextPageStartKey(nextPageStartKey)
-        print('Iteration :' + str(iteration) + '\t\t' +
-              'Items: ' + str(len(records['docs'])))
+        print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' + str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' +  str(nextPageStartKey))
         iteration += 1
     except (FileNotFoundError, ConnectionError) as err:
         logging.error(err)
