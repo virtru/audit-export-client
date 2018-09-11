@@ -3,6 +3,8 @@
 Python based Virtru Audit Export Client.
 
 ## Getting started
+This requires **`python 3.5.0`** or higher
+
 install pipenv using `brew`
 
 ```bash 
@@ -20,7 +22,7 @@ pipenv install
 run the script using:
 
 ```bash
-pipenv run python virtru-audit-client
+pipenv run start
 ```
 
 you must provide a `.ini` file with the following configuration:
@@ -34,6 +36,9 @@ apiPath=/api/messages
 ```
 
 ## Options
+to specify start/end dates for pulling records.  **`NOTE:`** all dates must be in a valid **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`
+
+### `--start=<start-date>`  `--end=<end-date>`
 
 to export audit records to json, provide a path to a folder
 
@@ -46,6 +51,10 @@ to export audit records to csv, provide a path to a folder
 to export audit records to syslog, provide a host and a port
 
 ### `--sysloghost=0.0.0.0 --syslogport=514`
+
+to pull records since the last time was run, set the bookmark option
+
+### `--bookmark` or `-b`
 
 you can also provide a `bookmark.ini` file which will tell the script where to start pulling records
 

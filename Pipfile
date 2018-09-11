@@ -3,6 +3,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[scripts]
+start = "python virtru-audit-client"
+
 [packages]
 requests = "*"
 pyjwt = "*"
@@ -11,6 +14,3 @@ pyjwt = "*"
 [dev-packages]
 pylint = "*"
 "autopep8" = "*"
-
-[requires]
-python_version = "3.7.0"
