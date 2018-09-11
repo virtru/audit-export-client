@@ -52,7 +52,7 @@ to export audit records to syslog, provide a host and a port
 
 ### `--sysloghost=0.0.0.0 --syslogport=514`
 
-to pull records since the last time was run, set the bookmark option
+to pull records since the last time the script was run, set the bookmark option
 
 ### `--bookmark` or `-b`
 
