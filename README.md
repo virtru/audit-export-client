@@ -1,6 +1,6 @@
-# virtru-audit-export-client
+# Virtru Audit Export Client
 
-Python based Virtru Audit Export Client.
+Python client for pulling audit data from the Virtru audit API.
 
 ## Getting started
 This requires **`python 3.5.0`** or higher
