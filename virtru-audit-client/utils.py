@@ -113,7 +113,7 @@ def exportToSysLog(host, port, records):
         formattedRecord = {k: ('\"-\"' if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
                            for (k, v) in record.items()}
         formattedStructData = " ".join(
-            ["=".join([key, str(val)]) for key, val in formattedRecord.items()])
+            ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
 
         adapter = logging.LoggerAdapter(
             logger, {'data': str(formattedStructData)})
