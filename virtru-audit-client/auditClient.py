@@ -4,8 +4,10 @@ import base64
 import requests
 import jwt
 import time
+import sys
+import logging
 
-VJWT_TTL_SECONDS = 60
+VJWT_TTL_SECONDS = 60.0
 
 
 class AuditClient:
@@ -23,9 +25,15 @@ class AuditClient:
         }
 
         apiUrl = self.apiHost + self.apiPath
-        response = requests.get("https://" + apiUrl,
-                                params=req['query'], headers=headers)
-        response.raise_for_status()
+        try:
+            response = requests.get("https://" + apiUrl,
+                                    params=req['query'], headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(
+                'An Error occured while trying to fetch records, verify the information in your config.ini')
+            sys.exit(1)
+
         return response.json()
 
     def __generateVjwtString(self, req):

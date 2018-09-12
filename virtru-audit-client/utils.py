@@ -1,16 +1,42 @@
 import configparser
 import datetime
+import time
 import os
 import json
 import sys
 import csv
 import pathlib
 import logging
+import socket
+import re
 from enum import Enum
 from logging.handlers import SysLogHandler
-from rfc5424logging import Rfc5424SysLogHandler, NILVALUE
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
+
+
+class RFC5424Formatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+
+        self._tz_fix = re.compile(r'([+-]\d{2})(\d{2})$')
+        super(RFC5424Formatter, self).__init__(*args, **kwargs)
+
+    def format(self, record):
+        try:
+            record.__dict__['hostname'] = socket.gethostname()
+        except:
+            record.__dict__['hostname'] = '-'
+        isotime = datetime.datetime.fromtimestamp(record.created).isoformat()
+        tz = self._tz_fix.match(time.strftime('%z'))
+        if time.timezone and tz:
+            (offset_hrs, offset_min) = tz.groups()
+            isotime = '{0}{1}:{2}'.format(isotime, offset_hrs, offset_min)
+        else:
+            isotime = isotime + 'Z'
+
+        record.__dict__['isotime'] = isotime
+
+        return super(RFC5424Formatter, self).format(record)
 
 
 class AuditTypes(Enum):
@@ -74,19 +100,24 @@ def exportToCsv(pathToFolder, records):
 def exportToSysLog(host, port, records):
     logger = logging.getLogger('virtru-export')
     logger.setLevel(logging.INFO)
-    sh = Rfc5424SysLogHandler(
-        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON, enterprise_id=22)
+
+    format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
+    formatter = RFC5424Formatter(format)
+    sh = logging.handlers.SysLogHandler(
+        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
+    sh.setLevel(logging.INFO)
+    sh.setFormatter(formatter)
     logger.addHandler(sh)
+
     for record in records:
-        formattedRecord = {k: (NILVALUE if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
+        formattedRecord = {k: ('\"-\"' if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
                            for (k, v) in record.items()}
-        extra = {
-            'msgid': NILVALUE,
-            'structured_data': {
-                'data': formattedRecord
-            }
-        }
-        logger.info('virtru-audit-%s', record['type'], extra=extra)
+        formattedStructData = " ".join(
+            ["=".join([key, str(val)]) for key, val in formattedRecord.items()])
+
+        adapter = logging.LoggerAdapter(
+            logger, {'data': str(formattedStructData)})
+        adapter.info('virtru-audit-%s', record['type'])
 
 
 def __writeCsvFile(auditType, pathToFolder, fileName, record):
