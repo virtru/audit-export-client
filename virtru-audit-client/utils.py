@@ -110,7 +110,7 @@ def exportToSysLog(host, port, records):
     logger.addHandler(sh)
 
     for record in records:
-        formattedRecord = {k: ('\"-\"' if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
+        formattedRecord = {k: ('-' if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
                            for (k, v) in record.items()}
         formattedStructData = " ".join(
             ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
