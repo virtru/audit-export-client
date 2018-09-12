@@ -86,7 +86,6 @@ if(nextPageStartKey and useBookMark):
 
 hasMore = True
 iteration = 1
-nextPageStartKey = ''
 
 while hasMore:
     try:
