@@ -110,14 +110,31 @@ def exportToSysLog(host, port, records):
     logger.addHandler(sh)
 
     for record in records:
-        formattedRecord = {k: ('-' if v == [] or v == '' else ','.join(v) if isinstance(v, list) else v)
-                           for (k, v) in record.items()}
+        formattedRecord = __flatten(record)
         formattedStructData = " ".join(
             ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
 
         adapter = logging.LoggerAdapter(
             logger, {'data': str(formattedStructData)})
         adapter.info('virtru-audit-%s', record['type'])
+
+
+def __flatten(dic):
+    for k, v in dic.items():
+        if isinstance(v, list):
+            items = []
+            for x in v:
+                if isinstance(x, dict):
+                    for (k1, v2) in x.items():
+                        items.append('{}={}'.format(k1, str(v2)))
+                else:
+                    items.append(str(x))
+            if items:
+                dic[k] = ','.join(items)
+        if v == [] or v == '':
+            dic[k] = '-'
+
+    return dic
 
 
 def __writeCsvFile(auditType, pathToFolder, fileName, record):
