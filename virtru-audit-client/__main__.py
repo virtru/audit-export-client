@@ -43,7 +43,7 @@ parser.add_argument('--syslogport',
                     dest='syslogport',
                     default='514',
                     required=False)
-parser.add_argument('--bookMark, -b',
+parser.add_argument('--bookmark', '-b',
                     help='Start from last bookmark',
                     dest='useBookMark',
                     default=False,
@@ -105,7 +105,7 @@ while hasMore:
             hasMore = False
             if records['docs']:
                 nextPageStartKey = records['docs'][-1]['recordId']
-                utils.saveNextPageStartKey(nextPageStartKey)
+        utils.saveNextPageStartKey(nextPageStartKey)
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
         iteration += 1
