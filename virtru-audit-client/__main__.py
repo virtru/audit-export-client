@@ -43,7 +43,7 @@ parser.add_argument('--syslogport',
                     dest='syslogport',
                     default='514',
                     required=False)
-parser.add_argument('--bookMark, -b',
+parser.add_argument('--bookmark', '-b',
                     help='Start from last bookmark',
                     dest='useBookMark',
                     default=False,
