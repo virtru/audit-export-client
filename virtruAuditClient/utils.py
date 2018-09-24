@@ -59,7 +59,7 @@ def getConfig(configFile):
         with open(configFile) as f:
             config.read_file(f)
         return config['ApiInfo']
-    except FileNotFoundError as err:
+    except FileNotFoundEror as err:
         logging.error(err)
         sys.exit(-1)
 

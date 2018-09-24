@@ -6,6 +6,7 @@ import jwt
 import time
 import sys
 import logging
+import virtruAuditClient.utils
 
 VJWT_TTL_SECONDS = 60.0
 
@@ -17,7 +18,37 @@ class AuditClient:
         self.apiHost = apiHost
         self.apiPath = apiPath
 
-    def fetchRecords(self, req):
+    def process(self, req, jsonFolderPath, csvFolderPath, syslogHost):
+        hasMore = True
+        iteration = 1
+
+        while hasMore:
+            try:
+                records = self.__fetchRecords(req)
+                if(jsonFolderPath and records['docs']):
+                    utils.exportToJson(jsonFolderPath, records['docs'])
+                if(csvFolderPath and records['docs']):
+                    utils.exportToCsv(csvFolderPath, records['docs'])
+                if(syslogHost is not None and syslogPort is not None and records['docs']):
+                    utils.exportToSysLog(
+                        syslogHost, syslogPort, records['docs'])
+
+                if 'nextPageStartKey' in records:
+                    nextPageStartKey = records['nextPageStartKey']
+                    req['query']['nextPageStartKey'] = nextPageStartKey
+                else:
+                    hasMore = False
+                    if records['docs']:
+                        nextPageStartKey = records['docs'][-1]['recordId']
+                utils.saveNextPageStartKey(nextPageStartKey)
+                print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
+                      str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
+                iteration += 1
+            except (FileNotFoundError, ConnectionError) as err:
+                logging.error(err)
+                sys.exit(-1)
+
+    def __fetchRecords(self, req):
         vjwtString = self.__generateVjwtString(req)
 
         headers = {

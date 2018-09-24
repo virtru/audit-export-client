@@ -5,14 +5,14 @@ name = "pypi"
 
 [scripts]
 start = "python virtru-audit-client"
+test = "pytest"
 
 [packages]
 requests = "*"
 pyjwt = "*"
 "rfc5424-logging-handler" = "*"
+pytest = "*"
 
 [dev-packages]
 pylint = "*"
 "autopep8" = "*"
-
-

@@ -1,8 +1,8 @@
 import argparse
-import utils
+import virtruAuditClient.utils
 import logging
 import sys
-from auditClient import AuditClient
+from virtruAuditClient.auditClient import AuditClient
 from requests import ConnectionError
 
 
@@ -70,8 +70,6 @@ syslogHost = args.sysloghost
 syslogPort = args.syslogport
 useBookMark = args.useBookMark
 
-auditClient = AuditClient(apiTokenSecret, apiTokenId,
-                          apiHost, apiPath)
 
 req = {
     'method': 'GET',
@@ -84,30 +82,7 @@ req = {
 if(nextPageStartKey and useBookMark):
     req['query']['nextPageStartKey'] = nextPageStartKey
 
-hasMore = True
-iteration = 1
 
-while hasMore:
-    try:
-        records = auditClient.fetchRecords(req)
-        if(jsonFolderPath and records['docs']):
-            utils.exportToJson(jsonFolderPath, records['docs'])
-        if(csvFolderPath and records['docs']):
-            utils.exportToCsv(csvFolderPath, records['docs'])
-        if(syslogHost is not None and syslogPort is not None and records['docs']):
-            utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
-
-        if 'nextPageStartKey' in records:
-            nextPageStartKey = records['nextPageStartKey']
-            req['query']['nextPageStartKey'] = nextPageStartKey
-        else:
-            hasMore = False
-            if records['docs']:
-                nextPageStartKey = records['docs'][-1]['recordId']
-        utils.saveNextPageStartKey(nextPageStartKey)
-        print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
-              str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
-        iteration += 1
-    except (FileNotFoundError, ConnectionError) as err:
-        logging.error(err)
-        sys.exit(-1)
+auditClient = AuditClient(apiTokenSecret, apiTokenId,
+                          apiHost, apiPath)
+auditClient.process(req, jsonFolderPath, csvFolderPath, syslogHost)
