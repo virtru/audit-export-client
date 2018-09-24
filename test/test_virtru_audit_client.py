@@ -2,6 +2,7 @@ from test.context import virtruAuditClient
 from unittest.mock import patch
 from virtruAuditClient import auditClient
 
+AuditClient = auditClient.AuditClient
 
 SOME_API_HOST = 'some_api_host'
 SOME_API_SECRET = 'some_api_secret'
@@ -20,19 +21,8 @@ SOME_RECORD = {
 }
 
 
-@patch('auditClient.requests', spec=True)
-@patch('virtruAuditClient.utils', spec=True)
+@patch('auditClient.requests', exportToJson=SOME_RECORD, exportToCsv=SOME_RECORD, exportToSysLog=SOME_RECORD autospec=True)
+@patch('virtruAuditClient.utils', autospec=True)
 class TestVirtruAuditClient():
 
     def test_one(self, mockUtils, mockRequests):
-        # mockUtils.exportToJson.return_value = SOME_RECORD
-        # toTest = AuditClient(SOME_API_SECRET, SOME_API_ID,
-        #                      SOME_API_HOST, SOME_API_PATH)
-        # somejsonFolderPath = '/somejson/path'
-        # somecsvFolderPath = '/somecsv/path'
-        # somesyslogHost = '0.0.0.0'
-
-        # toTest.process(SOME_REQ, somejsonFolderPath,
-        #                somecsvFolderPath, somesyslogHost)
-
-        assert 2 == 2
