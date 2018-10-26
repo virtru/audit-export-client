@@ -3,8 +3,8 @@ import base64
 import requests
 import sys
 from unittest.mock import Mock
-from auditclient import errors
-from auditclient.audit_client import AuditClient
+from auditexport.auditclient.errors import InvalidCredentialsError, ClientConnectionError
+from auditexport.auditclient.audit_client import AuditClient
 
 
 @pytest.fixture
@@ -25,17 +25,12 @@ def some_req():
 
 @pytest.fixture
 def mock_requests(request):
-    emptyResponse = {
-        'doc': []
-    }
 
-    def create_mock(response=emptyResponse, status_code=200):
-        response = emptyResponse if request.param is None else request.param
+    def create_mock(response, status_code=200):
         mock = Mock(spec=requests)
         mockResponse = Mock(spec=requests.Response)
         mockResponse.status_code = status_code
-        mockResponse.json.return_value = mock.get.return_value = response
-        mock.get.return_vale = None
+        mockResponse.json.return_value = response
         mock.get.return_value = mockResponse
         return mock
     return create_mock(request.param[0], request.param[1])
@@ -48,17 +43,22 @@ def test_generateQueryParams(some_audit_client, some_req):
     assert toTest == 'start=2000end=2018'
 
 
-response = {
-    'doc': [],
-    'nextPageStartKey': 'some-key'
-}
+error_responses = [
+    ((None, 401), InvalidCredentialsError),
+    ((None, 400), ClientConnectionError),
+    ((None, 500), ClientConnectionError),
+    ((None, 403), InvalidCredentialsError)
+]
 
 
-@pytest.mark.parametrize('expected_exception', [errors.ClientConnectionError])
-@pytest.mark.parametrize('mock_requests', [(response, 400)], indirect=True)
-def test_fetch(monkeypatch, some_audit_client, some_req, mock_requests, expected_exception):
+@pytest.mark.parametrize('mock_requests, expected_exception', error_responses, indirect=['mock_requests'])
+def test_fetch_throws_errors(monkeypatch, some_audit_client, some_req, mock_requests, expected_exception):
     """ Test to make sure errors are thrown """
-
-    monkeypatch.setattr('auditclient.audit_client.requests', mock_requests)
+    monkeypatch.setattr(
+        'auditexport.auditclient.audit_client.requests', mock_requests)
     with pytest.raises(expected_exception):
         some_audit_client.fetchRecords(some_req)
+
+
+def test_generateVjwtString():
+    pass

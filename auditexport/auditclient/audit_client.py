@@ -65,22 +65,18 @@ class AuditClient:
 
         response = requests.get("https://" + apiUrl,
                                 params=req['query'], headers=headers)
-        # response.raise_for_status()
+
         self._validateResponse(response.status_code)
-        # except requests.exceptions.HTTPError as e:
-        # except requests.exceptions.RequestException as e:
-        #     print(e)
-        #     sys.exit(1)
 
         return response.json()
 
     def _validateResponse(self, statusCode):
         """Validates response """
         def status401():
-            raise errors.InvalidCredentialsError
+            raise errors.InvalidCredentialsError()
 
         def default():
-            raise errors.ClientConnectionError
+            raise errors.ClientConnectionError()
 
         def status200():
             pass
@@ -88,6 +84,7 @@ class AuditClient:
         def switch(arg):
             switcher = {
                 401: status401,
+                403: status401,
                 200: status200
             }
             switcher.get(arg, default)()

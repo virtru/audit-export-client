@@ -1,4 +1,8 @@
 [
-  "tests/test_virtru_audit_client_small.py::test_generateQueryParams",
-  "tests/test_virtru_audit_client_small.py::test_fetch[mock_requests0-ClientConnectionError]"
+  "tests/test_auditclient_small.py::test_generateQueryParams",
+  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests0-InvalidCredentialsError]",
+  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests1-ClientConnectionError]",
+  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests2-ClientConnectionError]",
+  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests3-InvalidCredentialsError]",
+  "tests/test_auditclient_small.py::test_generateVjwtString"
 ]
