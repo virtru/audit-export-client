@@ -6,7 +6,7 @@ import jwt
 import time
 import sys
 import logging
-import virtruAuditClient.utils
+import .utils
 
 VJWT_TTL_SECONDS = 60.0
 

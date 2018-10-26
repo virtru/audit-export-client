@@ -5,7 +5,7 @@ name = "pypi"
 
 [scripts]
 start = "python virtru-audit-client"
-test = "pytest"
+test = "python -m pytest"
 
 [packages]
 requests = "*"
@@ -16,3 +16,4 @@ pytest = "*"
 [dev-packages]
 pylint = "*"
 "autopep8" = "*"
+virtruaudit = {editable = true, path = "."}
