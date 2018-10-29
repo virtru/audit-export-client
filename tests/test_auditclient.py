@@ -59,5 +59,6 @@ def test_fetch_throws_errors(monkeypatch, some_audit_client, some_req, mock_requ
         some_audit_client.fetchRecords(some_req)
 
 
-def test_generateVjwtString():
-    pass
+def test_generateVjwtString_throws(some_req):
+    with pytest.raises(InvalidCredentialsError):
+        some_audit_client._generateVjwtString(some_req)

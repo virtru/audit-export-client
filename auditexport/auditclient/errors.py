@@ -14,8 +14,8 @@ class AuditClientError(Exception):
 class InvalidCredentialsError(AuditClientError):
     """The provided credentials are invalid"""
 
-    def __init__(self):
-        msg = INVALID_CREDENTIALS_MESSAGE
+    def __init__(self, msg=None):
+        msg = INVALID_CREDENTIALS_MESSAGE if msg is None else msg
         super().__init__(msg)
 
 

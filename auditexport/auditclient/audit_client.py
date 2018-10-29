@@ -7,10 +7,11 @@ import jwt
 import time
 import sys
 import logging
+from binascii import Error
 from . import errors
 
 
-VJWT_TTL_SECONDS = 60.0
+VJWT_TTL_SECONDS = 300.0
 API_HOST = 'audit.virtru.com'
 API_PATH = '/api/messages'
 
@@ -56,6 +57,7 @@ class AuditClient:
                     nextPageStartKey: {String}
                 }
         """
+
         vjwtString = self._generateVjwtString(req)
 
         headers = {
@@ -100,6 +102,9 @@ class AuditClient:
         Returns:
             String -- The authorization string.
         """
+        print('........')
+        print(self.apiTokenSecret)
+        print('..........')
 
         tokenSecret = base64.b64decode(self.apiTokenSecret)
 
