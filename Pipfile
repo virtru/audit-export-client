@@ -12,8 +12,9 @@ requests = "*"
 pyjwt = "*"
 "rfc5424-logging-handler" = "*"
 pytest = "*"
+"iso8601" = "*"
 
 [dev-packages]
 pylint = "*"
 "autopep8" = "*"
-virtruaudit = {editable = true, path = "."}
+

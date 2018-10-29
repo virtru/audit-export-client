@@ -5,6 +5,7 @@
   "tests/test_auditclient.py::test_fetch_throws_errors[mock_requests2-ClientConnectionError]",
   "tests/test_auditclient.py::test_fetch_throws_errors[mock_requests3-InvalidCredentialsError]",
   "tests/test_auditclient.py::test_generateVjwtString",
+  "tests/test_main.py::test_main_succeeds[mock_config_file0]",
   "tests/test_utils.py::test_getConfig_no_file",
   "tests/test_utils.py::test_getConfig_throws",
   "tests/test_utils.py::test_getConfig_succeeds",

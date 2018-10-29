@@ -25,7 +25,6 @@ def some_req():
 
 @pytest.fixture
 def mock_requests(request):
-
     def create_mock(response, status_code=200):
         mock = Mock(spec=requests)
         mockResponse = Mock(spec=requests.Response)
