@@ -1,7 +1,8 @@
 import argparse
-import virtruAuditClient.utils
 import logging
 import sys
+from . import utils
+from .auditclient import AuditClient
 
 
 parser = argparse.ArgumentParser(prog='VirtruAuditExportClient',
@@ -50,6 +51,7 @@ parser.add_argument('--bookmark', '-b',
 
 args = parser.parse_args()
 
+# Get config information from config.ini file
 config = utils.getConfig(args.configFile)
 apiTokenId = config['apiTokenId']
 apiTokenSecret = config['apiTokenSecret']
@@ -81,6 +83,28 @@ if(nextPageStartKey and useBookMark):
     req['query']['nextPageStartKey'] = nextPageStartKey
 
 
-auditClient = AuditClient(apiTokenSecret, apiTokenId,
-                          apiHost, apiPath)
-auditClient.process(req, jsonFolderPath, csvFolderPath, syslogHost)
+hasMore = True
+iteration = 1
+
+auditclient = AuditClient(apiTokenSecret, apiTokenId, apiHost, apiPath)
+
+while hasMore:
+    records = auditclient.fetchRecords(req)
+    if(jsonFolderPath and records['docs']):
+        utils.exportToJson(jsonFolderPath, records['docs'])
+    if(csvFolderPath and records['docs']):
+        utils.exportToCsv(csvFolderPath, records['docs'])
+    if(syslogHost is not None and syslogPort is not None and records['docs']):
+        utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
+
+    if 'nextPageStartKey' in records:
+        nextPageStartKey = records['nextPageStartKey']
+        req['query']['nextPageStartKey'] = nextPageStartKey
+    else:
+        hasMore = False
+        if records['docs']:
+            nextPageStartKey = records['docs'][-1]['recordId']
+    utils.saveNextPageStartKey(nextPageStartKey)
+    print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
+          str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
+    iteration += 1

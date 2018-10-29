@@ -1,8 +1,12 @@
 [
-  "tests/test_auditclient_small.py::test_generateQueryParams",
-  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests0-InvalidCredentialsError]",
-  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests1-ClientConnectionError]",
-  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests2-ClientConnectionError]",
-  "tests/test_auditclient_small.py::test_fetch_throws_errors[mock_requests3-InvalidCredentialsError]",
-  "tests/test_auditclient_small.py::test_generateVjwtString"
+  "tests/test_auditclient.py::test_generateQueryParams",
+  "tests/test_auditclient.py::test_fetch_throws_errors[mock_requests0-InvalidCredentialsError]",
+  "tests/test_auditclient.py::test_fetch_throws_errors[mock_requests1-ClientConnectionError]",
+  "tests/test_auditclient.py::test_fetch_throws_errors[mock_requests2-ClientConnectionError]",
+  "tests/test_auditclient.py::test_fetch_throws_errors[mock_requests3-InvalidCredentialsError]",
+  "tests/test_auditclient.py::test_generateVjwtString",
+  "tests/test_utils.py::test_getConfig_no_file",
+  "tests/test_utils.py::test_getConfig_throws",
+  "tests/test_utils.py::test_getConfig_succeeds",
+  "tests/test_utils.py::test_getBooMark_returns_none"
 ]

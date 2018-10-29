@@ -4,7 +4,7 @@ import requests
 import sys
 from unittest.mock import Mock
 from auditexport.auditclient.errors import InvalidCredentialsError, ClientConnectionError
-from auditexport.auditclient.audit_client import AuditClient
+from auditexport.auditclient import AuditClient
 
 
 @pytest.fixture

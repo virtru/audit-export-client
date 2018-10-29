@@ -76,7 +76,7 @@ class AuditClient:
             raise errors.InvalidCredentialsError()
 
         def default():
-            raise errors.ClientConnectionError()
+            raise errors.ClientConnectionError(statusCode)
 
         def status200():
             pass

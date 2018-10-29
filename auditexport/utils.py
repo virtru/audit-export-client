@@ -11,6 +11,7 @@ import socket
 import re
 from enum import Enum
 from logging.handlers import SysLogHandler
+from .auditclient.errors import AuditClientError
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
 
@@ -53,20 +54,37 @@ class AuditTypes(Enum):
     USER_SETTINGS = 'userSettings'
 
 
-def getConfig(configFile):
+def getConfig(configFile=''):
+    config = configparser.ConfigParser()
+    apiTokenSecret = ''
+    apiTokenId = ''
+    apiHost = ''
+    apiPath = ''
+
+    with open(configFile) as f:
+        config.read_file(f)
+
     try:
-        config = configparser.ConfigParser()
-        with open(configFile) as f:
-            config.read_file(f)
-        return config['ApiInfo']
-    except FileNotFoundEror as err:
-        logging.error(err)
-        sys.exit(-1)
+        apiTokenSecret = config['ApiInfo']['apiTokenSecret']
+        apiTokenId = config['ApiInfo']['apiTokenId']
+        apiHost = config['ApiInfo']['apiHost']
+        apiPath = config['ApiInfo']['apiPath']
+    except KeyError as e:
+        raise InvalidConfigError
+
+    return {
+        'apiTokenSecret': apiTokenSecret,
+        'apiTokenId': apiTokenId,
+        'apiHost': apiHost,
+        'apiPath': apiPath
+    }
 
 
 def getNextPageStartKey():
     bookmark = configparser.ConfigParser()
     bookmark.read(BOOK_MARK_FILE_NAME)
+
+    # Config Parser returns an empty dataset if file does not exist
     if len(bookmark) <= 1:
         return None
     else:
@@ -144,3 +162,9 @@ def __writeCsvFile(auditType, pathToFolder, fileName, record):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerow(record)
+
+
+class InvalidConfigError(AuditClientError):
+    def __init__(self):
+        msg = 'An error occured while reading config file'
+        super().__init__(msg)
