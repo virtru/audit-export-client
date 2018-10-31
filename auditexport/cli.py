@@ -51,12 +51,9 @@ def main():
                         required=False,
                         action='store_true')
 
+    # Get args from config parser
     args = parser.parse_args()
 
-    process(args)
-
-
-def process(args):
     # Get config information from config.ini file
     config = utils.getConfig(args.configFile)
     apiTokenId = config['apiTokenId']
@@ -64,13 +61,27 @@ def process(args):
     apiHost = config['apiHost']
     apiPath = config['apiPath']
 
+    auditclient = AuditClient(apiTokenSecret, apiTokenId, apiHost, apiPath)
+
+    try:
+        process(args, auditclient, utils)
+    except ParseError as e:
+        logging.error(
+            'Error parsing start/end. Make sure date are valid ISO8601 format')
+        sys.exit(-1)
+
+
+def process(args, auditclient, utils):
+
     bookMark = utils.getNextPageStartKey()
     nextPageStartKey = None if not bookMark else bookMark['nextpagestartkey']
 
     queryStart = args.startDate
     queryEnd = args.endDate
 
-    __validateDates(queryStart, queryEnd)
+    # Check dates are in valid IS08601 format
+    iso8601.parse_date(queryStart)
+    iso8601.parse_date(queryEnd)
 
     jsonFolderPath = args.json
     csvFolderPath = args.csv
@@ -92,15 +103,13 @@ def process(args):
     hasMore = True
     iteration = 1
 
-    auditclient = AuditClient(apiTokenSecret, apiTokenId, apiHost, apiPath)
-
     while hasMore:
         records = auditclient.fetchRecords(req)
         if(jsonFolderPath and records['docs']):
             utils.exportToJson(jsonFolderPath, records['docs'])
         if(csvFolderPath and records['docs']):
             utils.exportToCsv(csvFolderPath, records['docs'])
-        if(syslogHost is not None and syslogPort is not None and records['docs']):
+        if(syslogHost is not None and records['docs']):
             utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
 
         if 'nextPageStartKey' in records:
@@ -114,18 +123,3 @@ def process(args):
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
         iteration += 1
-
-
-def __validateDates(start, end):
-    """ Validate dates are correct iso8601 format"""
-    try:
-        iso8601.parse_date(start)
-        iso8601.parse_date(end)
-    except ParseError as e:
-        logging.error(
-            'Error parsing start/end. Make sure date are valid ISO8601 format')
-        sys.exit(-1)
-
-
-if __name__ == "__main__":
-    main()

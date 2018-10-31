@@ -14,7 +14,7 @@ brew install pipenv
 install package dependencies
 
 ```bash
-pipenv install
+pipenv install --three
 ```
 
 ## Usage

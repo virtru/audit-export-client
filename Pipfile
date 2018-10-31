@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-start = "python virtru-audit-client"
-test = "python -m pytest"
+start = "python -m auditexport"
+test = "pytest"
 
 [packages]
 requests = "*"
@@ -17,4 +17,3 @@ pytest = "*"
 [dev-packages]
 pylint = "*"
 "autopep8" = "*"
-

@@ -22,6 +22,7 @@ class InvalidCredentialsError(AuditClientError):
 class ClientConnectionError(AuditClientError):
     """An error occured while trying to connect to api"""
 
-    def __init__(self, status_code):
-        msg = NETWORK_ERROR_MESSAGE+' [%d]' % (status_code)
+    def __init__(self, status_code=None):
+        msg = NETWORK_ERROR_MESSAGE
+        msg = (msg+' [%d]' % (status_code)) if status_code is not None else msg
         super().__init__(msg)

@@ -1,5 +1,4 @@
 *.pyc
-*.lock
 *.vscode
 output/*
 config.ini

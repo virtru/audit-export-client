@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/virtru/virtru-audit-export-client/compare/master...HEAD)
 
+## [1.1.0] - 2018-10-31
+## Added
+ - Added tests
+
 ## [1.0.0] - 2018-09-06
 ### Added
  - Init project

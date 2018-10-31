@@ -2,6 +2,8 @@ import pytest
 import base64
 import requests
 import sys
+import jwt
+import time
 from unittest.mock import Mock
 from auditexport.auditclient.errors import InvalidCredentialsError, ClientConnectionError
 from auditexport.auditclient import AuditClient
@@ -60,5 +62,6 @@ def test_fetch_throws_errors(monkeypatch, some_audit_client, some_req, mock_requ
 
 
 def test_generateVjwtString_throws(some_req):
+    SOME_INVALID_CLIENT = AuditClient('invalid-secret', 'some-id')
     with pytest.raises(InvalidCredentialsError):
-        some_audit_client._generateVjwtString(some_req)
+        SOME_INVALID_CLIENT._generateVjwtString(some_req)

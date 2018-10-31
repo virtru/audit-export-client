@@ -2,6 +2,7 @@
 import random
 import hashlib
 import base64
+import binascii
 import requests
 import jwt
 import time
@@ -102,11 +103,11 @@ class AuditClient:
         Returns:
             String -- The authorization string.
         """
-        print('........')
-        print(self.apiTokenSecret)
-        print('..........')
-
-        tokenSecret = base64.b64decode(self.apiTokenSecret)
+        try:
+            tokenSecret = base64.b64decode(self.apiTokenSecret)
+        except (TypeError, binascii.Error) as err:
+            raise errors.InvalidCredentialsError(
+                'The provided ApiSecret/ApiId are invalid')
 
         method = req['method']
         queryKeys = req['query'].keys()

@@ -40,20 +40,6 @@ class RFC5424Formatter(logging.Formatter):
         return super(RFC5424Formatter, self).format(record)
 
 
-class AuditTypes(Enum):
-    API_TOKEN = 'api-token'
-    APP_ID_BUNDLE = 'appIdBundle'
-    CONTRACT_GET = 'contract-get'
-    DLP_RULES = 'dlp-rules',
-    DLP_OVERRIDE = 'dlpOverride'
-    ENCRYPTED_SEARCH_KEY = 'encrypted-search-key'
-    LICENSE_INVITATION = 'licenseInvitation'
-    ORGANIZATION = 'organization'
-    POLICY = 'policy'
-    UNIT_ATTRIBUTES = 'unit-attributes'
-    USER_SETTINGS = 'userSettings'
-
-
 def getConfig(configFile=''):
     config = configparser.ConfigParser()
     apiTokenSecret = ''
@@ -100,7 +86,6 @@ def saveNextPageStartKey(nextPageStartKey):
 
 
 def exportToJson(pathToFolder, records):
-
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, "w") as f:
