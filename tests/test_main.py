@@ -63,7 +63,7 @@ def test_process_succeeds_no_options(mock_utils, mock_audit_client):
                     endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useBookMark=False)
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getNextPageStartKey.assert_called_with()
-    mock_utils.saveNextPageStartKey.assert_called_with(SOME_RECORD_ID_1)
+    mock_utils.saveNextPageStartKey.assert_not_called()
     mock_utils.exportToJson.assert_not_called()
     mock_utils.exportToCsv.assert_not_called()
     mock_utils.exportToSysLog.assert_not_called()
@@ -132,7 +132,7 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
                     endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useBookMark=False)
     cli.process(args, mock_audit_client, mock_utils)
     assert mock_audit_client.fetchRecords.call_count == 2
-    assert mock_utils.saveNextPageStartKey.call_count == 2
+    assert mock_utils.saveNextPageStartKey.call_count == 0
     # mock_audit_client.fetchRecords.assert_has_calls(
     #     EXPECTED_CALLS, any_order=True)
 

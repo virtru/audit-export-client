@@ -62,7 +62,8 @@ class AuditClient:
         vjwtString = self._generateVjwtString(req)
 
         headers = {
-            'Authorization': 'VJWTv1.0.0 ' + vjwtString.decode()
+            'Authorization': 'VJWTv1.0.0 ' + vjwtString.decode(),
+            'Connection': 'close'
         }
         apiUrl = self.apiHost + self.apiPath
 

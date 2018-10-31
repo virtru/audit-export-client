@@ -119,7 +119,10 @@ def process(args, auditclient, utils):
             hasMore = False
             if records['docs']:
                 nextPageStartKey = records['docs'][-1]['recordId']
-        utils.saveNextPageStartKey(nextPageStartKey)
+
+        if(useBookMark):
+            utils.saveNextPageStartKey(nextPageStartKey)
+
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
         iteration += 1
