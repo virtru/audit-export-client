@@ -11,7 +11,7 @@ import socket
 import re
 from enum import Enum
 from logging.handlers import SysLogHandler
-from .errors import AuditClientError
+from .auditclient.errors import AuditClientError
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
 
@@ -80,6 +80,8 @@ def getNextPageStartKey():
 
 
 def saveNextPageStartKey(nextPageStartKey):
+    logger.debug('saving nexpagestartkey.....')
+
     bookMarkConfig = configparser.ConfigParser()
     bookMarkConfig['next-page-start-key'] = {
         'nextPageStartKey': nextPageStartKey}
@@ -88,6 +90,8 @@ def saveNextPageStartKey(nextPageStartKey):
 
 
 def exportToJson(pathToFolder, records):
+    logger.debug('exporting records to json.....')
+
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, "w") as f:
@@ -96,6 +100,8 @@ def exportToJson(pathToFolder, records):
 
 
 def exportToCsv(pathToFolder, records):
+    logger.debug('exporting records to csv.....')
+
     for record in records:
         auditType = record['type']
         fileName = auditType + ".csv"
@@ -103,25 +109,30 @@ def exportToCsv(pathToFolder, records):
 
 
 def exportToSysLog(host, port, syslogger, records):
-    logger.debug('exporting to syslog......')
-    # sh = logging.handlers.SysLogHandler(
-    #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
-
-    # syslogger.addHandler(sysloghandler)
-
-    # logger = logging.getLogger('virtru-export')
-    # logger.setLevel(logging.INFO)
+    logger.debug('exporting to records to syslog......')
 
     format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
     formatter = RFC5424Formatter(format)
-    sh = logging.handlers.SysLogHandler(
+
+    # sysloghandler = logging.handlers.SysLogHandler(
+    #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
+    sysloghandler = logging.handlers.SysLogHandler(
         address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
-    sh.setLevel(logging.INFO)
-    sh.setFormatter(formatter)
-    syslogger.addHandler(sh)
+
+    sysloghandler.setLevel(logging.INFO)
+    sysloghandler.setFormatter(formatter)
+    syslogger.addHandler(sysloghandler)
+
+    # streamhandler = logging.StreamHandler()
+    # streamhandler.setLevel(logging.INFO)
+    # streamhandler.setFormatter(formatter)
+    # logger.addHandler(streamhandler)
 
     for record in records:
+        # Flatten out dictionary
         formattedRecord = __flatten(record)
+
+        # Construct structured data
         formattedStructData = " ".join(
             ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
 
@@ -129,8 +140,12 @@ def exportToSysLog(host, port, syslogger, records):
             syslogger, {'data': str(formattedStructData)})
         adapter.info('virtru-audit-%s', record['type'])
 
+        # adapter2 = logging.LoggerAdapter(
+        #     logger, {'data': str(formattedStructData)})
+        # adapter2.info('virtru-audit-%s', record['type'])
+
     logger.debug('closing syslogport......')
-    sh.close()
+    sysloghandler.close()
 
 
 def __flatten(dic):

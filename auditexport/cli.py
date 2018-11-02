@@ -2,8 +2,8 @@ import argparse
 import logging
 import sys
 import iso8601
-# from . import utils
-from .auditclient import AuditClient, utils
+from . import utils
+from .auditclient import AuditClient
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +66,6 @@ def main():
     loglevel = logging.DEBUG if args.verbose is True else logging.ERROR
     logger.parent.handlers[0].setLevel(loglevel)
 
-    logger.debug('debugging.....')
-
     # Get config information from config.ini file
     logger.debug('retriving info from config.ini....')
     config = utils.getConfig(args.configFile)
@@ -80,19 +78,21 @@ def main():
     auditclient = AuditClient(apiTokenSecret, apiTokenId, apiHost, apiPath)
 
     # Begin Processing
-    # try:
-    logger.debug('begin processing......')
-    process(args, auditclient, utils)
-    # except ParseError as e:
-    #     logging.error(
-    #         'Error parsing start/end. Make sure date are valid ISO8601 format')
-    #     sys.exit(-1)
+    try:
+        logger.debug('begin processing......')
+        process(args, auditclient, utils)
+    except Exception as e:
+        logging.exception(e)
 
 
 def process(args, auditclient, utils):
 
+    logger.debug('fetching bookmark.......')
+
     bookMark = utils.getNextPageStartKey()
     nextPageStartKey = None if not bookMark else bookMark['nextpagestartkey']
+
+    logger.debug('nextpagestartkey: %s' % (nextPageStartKey))
 
     queryStart = args.startDate
     queryEnd = args.endDate
@@ -107,12 +107,13 @@ def process(args, auditclient, utils):
     syslogPort = args.syslogport
     useBookMark = args.useBookMark
 
+    logger.debug('usebookmark: %s' % (useBookMark))
+
     # Syslog logger
     syslogger = None
-
     if syslogHost is not None:
         syslogger = logging.getLogger('virtru-export')
-        syslogger.setLevel(logging.WARNING)
+        syslogger.setLevel(logging.INFO)
 
     req = {
         'method': 'GET',
@@ -140,6 +141,7 @@ def process(args, auditclient, utils):
                                  syslogger, records['docs'])
 
         if 'nextPageStartKey' in records:
+            logger.debug('found nextpagestartkey')
             nextPageStartKey = records['nextPageStartKey']
             req['query']['nextPageStartKey'] = nextPageStartKey
         else:
@@ -153,3 +155,4 @@ def process(args, auditclient, utils):
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
         iteration += 1
+    print('All records exported!!!!')

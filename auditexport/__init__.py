@@ -7,7 +7,7 @@ streamhandler = logging.StreamHandler()
 streamhandler.setLevel(logging.INFO)
 
 streamformat = logging.Formatter(
-    '%(name)s - [%(levelname)s] - %(message)s')
+    '[%(levelname)s] - %(name)s -  %(message)s')
 streamhandler.setFormatter(streamformat)
 
 logger.addHandler(streamhandler)
