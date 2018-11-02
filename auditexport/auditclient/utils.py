@@ -11,7 +11,7 @@ import socket
 import re
 from enum import Enum
 from logging.handlers import SysLogHandler
-from .auditclient.errors import AuditClientError
+from .errors import AuditClientError
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
 
@@ -103,6 +103,7 @@ def exportToCsv(pathToFolder, records):
 
 
 def exportToSysLog(host, port, syslogger, records):
+    logger.debug('exporting to syslog......')
     # sh = logging.handlers.SysLogHandler(
     #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
 
@@ -127,6 +128,9 @@ def exportToSysLog(host, port, syslogger, records):
         adapter = logging.LoggerAdapter(
             syslogger, {'data': str(formattedStructData)})
         adapter.info('virtru-audit-%s', record['type'])
+
+    logger.debug('closing syslogport......')
+    sh.close()
 
 
 def __flatten(dic):

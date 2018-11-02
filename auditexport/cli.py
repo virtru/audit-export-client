@@ -2,8 +2,8 @@ import argparse
 import logging
 import sys
 import iso8601
-from . import utils
-from .auditclient import AuditClient
+# from . import utils
+from .auditclient import AuditClient, utils
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +63,13 @@ def main():
     args = parser.parse_args()
 
     # Set Log level
-    loglevel = logging.INFO if args.verbose is True else logging.ERROR
+    loglevel = logging.DEBUG if args.verbose is True else logging.ERROR
+    logger.parent.handlers[0].setLevel(loglevel)
+
+    logger.debug('debugging.....')
 
     # Get config information from config.ini file
-    logger.info('retriving info from config.ini....')
+    logger.debug('retriving info from config.ini....')
     config = utils.getConfig(args.configFile)
     apiTokenId = config['apiTokenId']
     apiTokenSecret = config['apiTokenSecret']
@@ -78,7 +81,7 @@ def main():
 
     # Begin Processing
     # try:
-    logger.info('begin processing......')
+    logger.debug('begin processing......')
     process(args, auditclient, utils)
     # except ParseError as e:
     #     logging.error(
@@ -125,7 +128,7 @@ def process(args, auditclient, utils):
     hasMore = True
     iteration = 1
 
-    logger.info('fetching audit records....')
+    logger.debug('fetching audit records....')
     while hasMore:
         records = auditclient.fetchRecords(req)
         if(jsonFolderPath and records['docs']):

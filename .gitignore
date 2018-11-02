@@ -4,3 +4,4 @@ output/*
 config.ini
 __pycache__/*
 bookmark.ini
+config.ini
