@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 class RFC5424Formatter(logging.Formatter):
+
+    # RFC5424 formater by author:specialunderwear
+    # https://github.com/specialunderwear/python-rfc5424-logging-formatter
+
     def __init__(self, *args, **kwargs):
 
         self._tz_fix = re.compile(r'([+-]\d{2})(\d{2})$')
@@ -111,18 +115,6 @@ def exportToCsv(pathToFolder, records):
 def exportToSysLog(host, port, syslogger, records):
     logger.debug('exporting to records to syslog......')
 
-    format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
-    formatter = RFC5424Formatter(format)
-
-    # sysloghandler = logging.handlers.SysLogHandler(
-    #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
-    sysloghandler = logging.handlers.SysLogHandler(
-        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
-
-    sysloghandler.setLevel(logging.INFO)
-    sysloghandler.setFormatter(formatter)
-    syslogger.addHandler(sysloghandler)
-
     # streamhandler = logging.StreamHandler()
     # streamhandler.setLevel(logging.INFO)
     # streamhandler.setFormatter(formatter)
@@ -144,8 +136,20 @@ def exportToSysLog(host, port, syslogger, records):
         #     logger, {'data': str(formattedStructData)})
         # adapter2.info('virtru-audit-%s', record['type'])
 
-    logger.debug('closing syslogport......')
-    sysloghandler.close()
+
+def configSysLogger(host, port):
+    syslogger = logging.getLogger('virtru-export')
+    syslogger.setLevel(logging.INFO)
+    format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
+    formatter = RFC5424Formatter(format)
+    # sysloghandler = logging.handlers.SysLogHandler(
+    #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
+    sysloghandler = logging.handlers.SysLogHandler(
+        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
+    sysloghandler.setLevel(logging.INFO)
+    sysloghandler.setFormatter(formatter)
+    syslogger.addHandler(sysloghandler)
+    return syslogger
 
 
 def __flatten(dic):

@@ -110,10 +110,8 @@ def process(args, auditclient, utils):
     logger.debug('usebookmark: %s' % (useBookMark))
 
     # Syslog logger
-    syslogger = None
-    if syslogHost is not None:
-        syslogger = logging.getLogger('virtru-export')
-        syslogger.setLevel(logging.INFO)
+    syslogger = None if syslogHost is None else utils.configSysLogger(
+        syslogHost, syslogPort)
 
     req = {
         'method': 'GET',
