@@ -15,6 +15,8 @@ from .auditclient.errors import AuditClientError
 
 BOOK_MARK_FILE_NAME = 'bookmark.ini'
 
+logger = logging.getLogger(__name__)
+
 
 class RFC5424Formatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
@@ -100,9 +102,14 @@ def exportToCsv(pathToFolder, records):
         __writeCsvFile(auditType, pathToFolder, fileName, record)
 
 
-def exportToSysLog(host, port, records):
-    logger = logging.getLogger('virtru-export')
-    logger.setLevel(logging.INFO)
+def exportToSysLog(host, port, syslogger, records):
+    # sh = logging.handlers.SysLogHandler(
+    #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
+
+    # syslogger.addHandler(sysloghandler)
+
+    # logger = logging.getLogger('virtru-export')
+    # logger.setLevel(logging.INFO)
 
     format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
     formatter = RFC5424Formatter(format)
@@ -110,7 +117,7 @@ def exportToSysLog(host, port, records):
         address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
     sh.setLevel(logging.INFO)
     sh.setFormatter(formatter)
-    logger.addHandler(sh)
+    syslogger.addHandler(sh)
 
     for record in records:
         formattedRecord = __flatten(record)
@@ -118,7 +125,7 @@ def exportToSysLog(host, port, records):
             ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
 
         adapter = logging.LoggerAdapter(
-            logger, {'data': str(formattedStructData)})
+            syslogger, {'data': str(formattedStructData)})
         adapter.info('virtru-audit-%s', record['type'])
 
 

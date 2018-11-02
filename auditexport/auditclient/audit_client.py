@@ -11,6 +11,7 @@ import logging
 from binascii import Error
 from . import errors
 
+logger = logging.getLogger(__name__)
 
 VJWT_TTL_SECONDS = 300.0
 API_HOST = 'audit.virtru.com'

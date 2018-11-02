@@ -5,6 +5,8 @@ import iso8601
 from . import utils
 from .auditclient import AuditClient
 
+logger = logging.getLogger(__name__)
+
 
 def main():
     parser = argparse.ArgumentParser(prog='VirtruAuditExportClient',
@@ -44,9 +46,15 @@ def main():
                         dest='syslogport',
                         default='514',
                         required=False)
-    parser.add_argument('--bookmark', '-b',
+    parser.add_argument('-b', '--bookmark',
                         help='Start from last bookmark',
                         dest='useBookMark',
+                        default=False,
+                        required=False,
+                        action='store_true')
+    parser.add_argument('-v', '--verbose',
+                        help='Verbose option',
+                        dest='verbose',
                         default=False,
                         required=False,
                         action='store_true')
@@ -54,21 +62,28 @@ def main():
     # Get args from config parser
     args = parser.parse_args()
 
+    # Set Log level
+    loglevel = logging.INFO if args.verbose is True else logging.ERROR
+
     # Get config information from config.ini file
+    logger.info('retriving info from config.ini....')
     config = utils.getConfig(args.configFile)
     apiTokenId = config['apiTokenId']
     apiTokenSecret = config['apiTokenSecret']
     apiHost = config['apiHost']
     apiPath = config['apiPath']
 
+    # Initialize auditclient
     auditclient = AuditClient(apiTokenSecret, apiTokenId, apiHost, apiPath)
 
-    try:
-        process(args, auditclient, utils)
-    except ParseError as e:
-        logging.error(
-            'Error parsing start/end. Make sure date are valid ISO8601 format')
-        sys.exit(-1)
+    # Begin Processing
+    # try:
+    logger.info('begin processing......')
+    process(args, auditclient, utils)
+    # except ParseError as e:
+    #     logging.error(
+    #         'Error parsing start/end. Make sure date are valid ISO8601 format')
+    #     sys.exit(-1)
 
 
 def process(args, auditclient, utils):
@@ -89,6 +104,13 @@ def process(args, auditclient, utils):
     syslogPort = args.syslogport
     useBookMark = args.useBookMark
 
+    # Syslog logger
+    syslogger = None
+
+    if syslogHost is not None:
+        syslogger = logging.getLogger('virtru-export')
+        syslogger.setLevel(logging.WARNING)
+
     req = {
         'method': 'GET',
         'query': {
@@ -103,6 +125,7 @@ def process(args, auditclient, utils):
     hasMore = True
     iteration = 1
 
+    logger.info('fetching audit records....')
     while hasMore:
         records = auditclient.fetchRecords(req)
         if(jsonFolderPath and records['docs']):
@@ -110,7 +133,8 @@ def process(args, auditclient, utils):
         if(csvFolderPath and records['docs']):
             utils.exportToCsv(csvFolderPath, records['docs'])
         if(syslogHost is not None and records['docs']):
-            utils.exportToSysLog(syslogHost, syslogPort, records['docs'])
+            utils.exportToSysLog(syslogHost, syslogPort,
+                                 syslogger, records['docs'])
 
         if 'nextPageStartKey' in records:
             nextPageStartKey = records['nextPageStartKey']
