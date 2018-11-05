@@ -9,11 +9,12 @@ import pathlib
 import logging
 import socket
 import re
-from enum import Enum
 from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
-BOOK_MARK_FILE_NAME = 'bookmark.ini'
+EXPORT_DIR = '.auditexport'
+BOOK_MARK_PATH = '%s/bookmark.ini' % (EXPORT_DIR)
+
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ def getConfig(configFile=''):
 
 def getNextPageStartKey():
     bookmark = configparser.ConfigParser()
-    bookmark.read(BOOK_MARK_FILE_NAME)
+    bookmark.read(BOOK_MARK_PATH)
 
     # Config Parser returns an empty dataset if file does not exist
     if len(bookmark) <= 1:
@@ -89,7 +90,8 @@ def saveNextPageStartKey(nextPageStartKey):
     bookMarkConfig = configparser.ConfigParser()
     bookMarkConfig['next-page-start-key'] = {
         'nextPageStartKey': nextPageStartKey}
-    with open(BOOK_MARK_FILE_NAME, 'w') as bookMarkFile:
+    os.makedirs(os.path.dirname(BOOK_MARK_PATH), exist_ok=True)
+    with open(BOOK_MARK_PATH, 'w') as bookMarkFile:
         bookMarkConfig.write(bookMarkFile)
 
 
@@ -115,11 +117,6 @@ def exportToCsv(pathToFolder, records):
 def exportToSysLog(host, port, syslogger, records):
     logger.debug('exporting to records to syslog......')
 
-    # streamhandler = logging.StreamHandler()
-    # streamhandler.setLevel(logging.INFO)
-    # streamhandler.setFormatter(formatter)
-    # logger.addHandler(streamhandler)
-
     for record in records:
         # Flatten out dictionary
         formattedRecord = __flatten(record)
@@ -132,18 +129,12 @@ def exportToSysLog(host, port, syslogger, records):
             syslogger, {'data': str(formattedStructData)})
         adapter.info('virtru-audit-%s', record['type'])
 
-        # adapter2 = logging.LoggerAdapter(
-        #     logger, {'data': str(formattedStructData)})
-        # adapter2.info('virtru-audit-%s', record['type'])
-
 
 def configSysLogger(host, port):
     syslogger = logging.getLogger('virtru-export')
     syslogger.setLevel(logging.INFO)
     format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
     formatter = RFC5424Formatter(format)
-    # sysloghandler = logging.handlers.SysLogHandler(
-    #     address='/var/run/syslog', facility=SysLogHandler.LOG_INFO)
     sysloghandler = logging.handlers.SysLogHandler(
         address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
     sysloghandler.setLevel(logging.INFO)

@@ -1,7 +1,6 @@
 *.pyc
 *.vscode
 output/*
-config.ini
 __pycache__/*
-bookmark.ini
-config.ini
+*.auditexport
+*.pytest_cache

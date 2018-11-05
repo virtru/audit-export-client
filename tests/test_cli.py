@@ -55,6 +55,7 @@ def mock_utils():
     mock_utils.exportToJson.return_value = None
     mock_utils.exportToCsv.return_value = None
     mock_utils.exportToSysLog.return_value = None
+    mock_utils.configSysLogger.return_value = 'some-logger'
     return mock_utils
 
 
@@ -78,7 +79,7 @@ def test_process_succeeds_no_options(mock_utils, mock_audit_client):
 
 def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_response):
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='some-port', useBookMark='some-bmk')
+                    endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useBookMark='some-bmk')
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getNextPageStartKey.assert_called_with()
     mock_utils.saveNextPageStartKey.assert_called_with(SOME_RECORD_ID_1)
@@ -87,7 +88,7 @@ def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_respo
     mock_utils.exportToCsv.assert_called_with(
         'some-csv', mock_response['docs'])
     mock_utils.exportToSysLog.assert_called_with(
-        'some-syslog', 'some-port', mock_response['docs'])
+        'some-syslog', '514', mock_utils.configSysLogger('some-syslog', '514'), mock_response['docs'])
 
 
 def test_process_with_bookMark(mock_audit_client, mock_utils):
