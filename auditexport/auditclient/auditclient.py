@@ -51,7 +51,7 @@ class AuditClient:
 
 
         Returns:
-            Dictionay -- repsponse object
+            Dictionary -- repsponse object
 
             The response dictionary has the following format:
                 {

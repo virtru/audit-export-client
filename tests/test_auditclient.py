@@ -56,7 +56,7 @@ error_responses = [
 def test_fetch_throws_errors(monkeypatch, some_audit_client, some_req, mock_requests, expected_exception):
     """ Test to make sure errors are thrown """
     monkeypatch.setattr(
-        'auditexport.auditclient.audit_client.requests', mock_requests)
+        'auditexport.auditclient.auditclient.requests', mock_requests)
     with pytest.raises(expected_exception):
         some_audit_client.fetchRecords(some_req)
 
