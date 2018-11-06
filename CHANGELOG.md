@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [1.1.0] - 2018-10-31
 ## Added
  - Added tests
+ - Fixed re-initialization of syslog handler
+ - added `-v` flag for verbose logs
+ - Refactored code to be more pythonic :snake:
 
 ## [1.0.0] - 2018-09-06
 ### Added
