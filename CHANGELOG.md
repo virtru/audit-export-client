@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/virtru/virtru-audit-export-client/compare/master...HEAD)
 
-## [1.1.0] - 2018-10-31
+## [1.1.0](https://github.com/virtru/audit-export-client/pull/4) - 2018-10-31
 ## Added
  - Added tests
  - Fixed re-initialization of syslog handler
