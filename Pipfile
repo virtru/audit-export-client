@@ -4,15 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-start = "python virtru-audit-client"
+start = "python -m auditexport"
+test = "pytest"
 
 [packages]
 requests = "*"
 pyjwt = "*"
 "rfc5424-logging-handler" = "*"
+pytest = "*"
+"iso8601" = "*"
 
 [dev-packages]
 pylint = "*"
 "autopep8" = "*"
-
-

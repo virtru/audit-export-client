@@ -9,13 +9,21 @@ import pathlib
 import logging
 import socket
 import re
-from enum import Enum
 from logging.handlers import SysLogHandler
+from .auditclient.errors import AuditClientError
 
-BOOK_MARK_FILE_NAME = 'bookmark.ini'
+EXPORT_DIR = '.auditexport'
+BOOK_MARK_PATH = '%s/bookmark.ini' % (EXPORT_DIR)
+
+
+logger = logging.getLogger(__name__)
 
 
 class RFC5424Formatter(logging.Formatter):
+
+    # RFC5424 formater by author:specialunderwear
+    # https://github.com/specialunderwear/python-rfc5424-logging-formatter
+
     def __init__(self, *args, **kwargs):
 
         self._tz_fix = re.compile(r'([+-]\d{2})(\d{2})$')
@@ -39,34 +47,37 @@ class RFC5424Formatter(logging.Formatter):
         return super(RFC5424Formatter, self).format(record)
 
 
-class AuditTypes(Enum):
-    API_TOKEN = 'api-token'
-    APP_ID_BUNDLE = 'appIdBundle'
-    CONTRACT_GET = 'contract-get'
-    DLP_RULES = 'dlp-rules',
-    DLP_OVERRIDE = 'dlpOverride'
-    ENCRYPTED_SEARCH_KEY = 'encrypted-search-key'
-    LICENSE_INVITATION = 'licenseInvitation'
-    ORGANIZATION = 'organization'
-    POLICY = 'policy'
-    UNIT_ATTRIBUTES = 'unit-attributes'
-    USER_SETTINGS = 'userSettings'
+def getConfig(configFile=''):
+    config = configparser.ConfigParser()
+    apiTokenSecret = ''
+    apiTokenId = ''
+    apiHost = ''
+    apiPath = ''
 
+    with open(configFile) as f:
+        config.read_file(f)
 
-def getConfig(configFile):
     try:
-        config = configparser.ConfigParser()
-        with open(configFile) as f:
-            config.read_file(f)
-        return config['ApiInfo']
-    except FileNotFoundError as err:
-        logging.error(err)
-        sys.exit(-1)
+        apiTokenSecret = config['ApiInfo']['apiTokenSecret']
+        apiTokenId = config['ApiInfo']['apiTokenId']
+        apiHost = config['ApiInfo']['apiHost']
+        apiPath = config['ApiInfo']['apiPath']
+    except KeyError as e:
+        raise InvalidConfigError
+
+    return {
+        'apiTokenSecret': apiTokenSecret,
+        'apiTokenId': apiTokenId,
+        'apiHost': apiHost,
+        'apiPath': apiPath
+    }
 
 
 def getNextPageStartKey():
     bookmark = configparser.ConfigParser()
-    bookmark.read(BOOK_MARK_FILE_NAME)
+    bookmark.read(BOOK_MARK_PATH)
+
+    # Config Parser returns an empty dataset if file does not exist
     if len(bookmark) <= 1:
         return None
     else:
@@ -74,14 +85,18 @@ def getNextPageStartKey():
 
 
 def saveNextPageStartKey(nextPageStartKey):
+    logger.debug('saving nexpagestartkey.....')
+
     bookMarkConfig = configparser.ConfigParser()
     bookMarkConfig['next-page-start-key'] = {
         'nextPageStartKey': nextPageStartKey}
-    with open(BOOK_MARK_FILE_NAME, 'w') as bookMarkFile:
+    os.makedirs(os.path.dirname(BOOK_MARK_PATH), exist_ok=True)
+    with open(BOOK_MARK_PATH, 'w') as bookMarkFile:
         bookMarkConfig.write(bookMarkFile)
 
 
 def exportToJson(pathToFolder, records):
+    logger.debug('exporting records to json.....')
 
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
@@ -91,32 +106,41 @@ def exportToJson(pathToFolder, records):
 
 
 def exportToCsv(pathToFolder, records):
+    logger.debug('exporting records to csv.....')
+
     for record in records:
         auditType = record['type']
         fileName = auditType + ".csv"
         __writeCsvFile(auditType, pathToFolder, fileName, record)
 
 
-def exportToSysLog(host, port, records):
-    logger = logging.getLogger('virtru-export')
-    logger.setLevel(logging.INFO)
-
-    format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
-    formatter = RFC5424Formatter(format)
-    sh = logging.handlers.SysLogHandler(
-        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
-    sh.setLevel(logging.INFO)
-    sh.setFormatter(formatter)
-    logger.addHandler(sh)
+def exportToSysLog(host, port, syslogger, records):
+    logger.debug('exporting to records to syslog......')
 
     for record in records:
+        # Flatten out dictionary
         formattedRecord = __flatten(record)
+
+        # Construct structured data
         formattedStructData = " ".join(
             ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
 
         adapter = logging.LoggerAdapter(
-            logger, {'data': str(formattedStructData)})
+            syslogger, {'data': str(formattedStructData)})
         adapter.info('virtru-audit-%s', record['type'])
+
+
+def configSysLogger(host, port):
+    syslogger = logging.getLogger('virtru-export')
+    syslogger.setLevel(logging.INFO)
+    format = '%(isotime)s %(hostname)s %(name)s %(process)d - [data@22 %(data)s] %(message)s'
+    formatter = RFC5424Formatter(format)
+    sysloghandler = logging.handlers.SysLogHandler(
+        address=(host, int(port)), facility=SysLogHandler.LOG_DAEMON)
+    sysloghandler.setLevel(logging.INFO)
+    sysloghandler.setFormatter(formatter)
+    syslogger.addHandler(sysloghandler)
+    return syslogger
 
 
 def __flatten(dic):
@@ -144,3 +168,9 @@ def __writeCsvFile(auditType, pathToFolder, fileName, record):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerow(record)
+
+
+class InvalidConfigError(AuditClientError):
+    def __init__(self):
+        msg = 'An error occured while reading config file'
+        super().__init__(msg)
