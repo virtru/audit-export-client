@@ -13,7 +13,7 @@ from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
 EXPORT_DIR = '.auditexport'
-BOOK_MARK_PATH = '%s/bookmark.ini' % (EXPORT_DIR)
+CURSOR_PATH = '%s/cursor.ini' % (EXPORT_DIR)
 
 
 logger = logging.getLogger(__name__)
@@ -72,27 +72,37 @@ def getConfig(configFile=''):
         'apiPath': apiPath
     }
 
+def checkRecords(records=[], savedId=None):
+    if not savedId:
+        return records
+    for i in range(len(records)):
+        if records[i] == savedId:
+            return records[i+1:]
+    return records
 
-def getNextPageStartKey():
-    bookmark = configparser.ConfigParser()
-    bookmark.read(BOOK_MARK_PATH)
+
+def getnextPageCursor():
+    cursor = configparser.ConfigParser()
+    cursor.read(CURSOR_PATH)
 
     # Config Parser returns an empty dataset if file does not exist
-    if len(bookmark) <= 1:
+    if len(cursor) <= 1:
         return None
     else:
-        return bookmark['next-page-start-key']
+        return cursor['next-page-cursor']
 
 
-def saveNextPageStartKey(nextPageStartKey):
-    logger.debug('saving nexpagestartkey.....')
+def saveNextPageCursor(nextPageCursor, lastRecordSaved):
+    logger.debug('saving next-page-cursor.....')
 
     bookMarkConfig = configparser.ConfigParser()
-    bookMarkConfig['next-page-start-key'] = {
-        'nextPageStartKey': nextPageStartKey}
-    os.makedirs(os.path.dirname(BOOK_MARK_PATH), exist_ok=True)
-    with open(BOOK_MARK_PATH, 'w') as bookMarkFile:
-        bookMarkConfig.write(bookMarkFile)
+    bookMarkConfig['next-page-cursor'] = {
+        'nextPageCursor': nextPageCursor,
+        'lastRecordSaved': lastRecordSaved
+    }
+    os.makedirs(os.path.dirname(CURSOR_PATH), exist_ok=True)
+    with open(CURSOR_PATH, 'w') as cursorFile:
+        bookMarkConfig.write(cursorFile)
 
 
 def exportToJson(pathToFolder, records):

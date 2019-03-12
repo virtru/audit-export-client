@@ -46,10 +46,16 @@ def main():
                         dest='syslogport',
                         default='514',
                         required=False)
-    parser.add_argument('-b', '--bookmark',
-                        help='Start from last bookmark',
-                        dest='useBookMark',
+    parser.add_argument('-c', '--cursor',
+                        help='Start from last cursor',
+                        dest='useCursor',
                         default=False,
+                        required=False,
+                        action='store_true')
+    parser.add_argument('-l', '--limit',
+                        help='Number of records we pull for each chunk when we use --cursor. Default is 100',
+                        dest='limit',
+                        default=100,
                         required=False,
                         action='store_true')
     parser.add_argument('-v', '--verbose',
@@ -87,12 +93,13 @@ def main():
 
 def process(args, auditclient, utils):
 
-    logger.debug('fetching bookmark.......')
+    logger.debug('fetching cursor.......')
 
-    bookMark = utils.getNextPageStartKey()
-    nextPageStartKey = None if not bookMark else bookMark['nextpagestartkey']
+    cursor = utils.getnextPageCursor()
+    nextPageCursor = None if not cursor else cursor['nextPageCursor']
+    lastRecordId = None if not cursor else cursor['lastRecordSaved']
 
-    logger.debug('nextpagestartkey: %s' % (nextPageStartKey))
+    logger.debug('nextPageCursor: %s' % (nextPageCursor))
 
     queryStart = args.startDate
     queryEnd = args.endDate
@@ -105,9 +112,10 @@ def process(args, auditclient, utils):
     csvFolderPath = args.csv
     syslogHost = args.sysloghost
     syslogPort = args.syslogport
-    useBookMark = args.useBookMark
+    useCursor = args.useCursor
+    limit = args.limit
 
-    logger.debug('usebookmark: %s' % (useBookMark))
+    logger.debug('useCursor: %s' % (useCursor))
 
     # Syslog logger
     syslogger = None if syslogHost is None else utils.configSysLogger(
@@ -117,40 +125,43 @@ def process(args, auditclient, utils):
         'method': 'GET',
         'query': {
             'start': queryStart,
-            'end': queryEnd
+            'end': queryEnd,
+            'sort': 'timestamp:asc',
         }
     }
 
-    if(nextPageStartKey and useBookMark):
-        req['query']['nextPageStartKey'] = nextPageStartKey
+    if(nextPageCursor and useCursor):
+        req['query']['nextPageCursor'] = nextPageCursor
+        req['query']['limit'] = limit
 
     hasMore = True
     iteration = 1
 
     logger.debug('fetching audit records....')
     while hasMore:
-        records = auditclient.fetchRecords(req)
-        if(jsonFolderPath and records['docs']):
-            utils.exportToJson(jsonFolderPath, records['docs'])
-        if(csvFolderPath and records['docs']):
-            utils.exportToCsv(csvFolderPath, records['docs'])
-        if(syslogHost is not None and records['docs']):
-            utils.exportToSysLog(syslogHost, syslogPort,
-                                 syslogger, records['docs'])
+        payload = auditclient.fetchRecords(req)
+        records = payload['data'] if not cursor else utils.checkRecords(payload['data'], lastRecordId)
 
-        if 'nextPageStartKey' in records:
-            logger.debug('found nextpagestartkey')
-            nextPageStartKey = records['nextPageStartKey']
-            req['query']['nextPageStartKey'] = nextPageStartKey
+        if(jsonFolderPath and records):
+            utils.exportToJson(jsonFolderPath, records)
+        if(csvFolderPath and records):
+            utils.exportToCsv(csvFolderPath, records)
+        if(syslogHost is not None and records):
+            utils.exportToSysLog(syslogHost, syslogPort,
+                                 syslogger, records)
+
+        if 'after' in payload['cursor']:
+            logger.debug('found next cursor')
+            nextPageCursor = payload['cursor']
+            req['query']['cursor'] = nextPageCursor
         else:
             hasMore = False
-            if records['docs']:
-                nextPageStartKey = records['docs'][-1]['recordId']
+            nextPageCursor = None
 
-        if(useBookMark):
-            utils.saveNextPageStartKey(nextPageStartKey)
+        if(useCursor and nextPageCursor):
+            utils.saveNextPageCursor(nextPageCursor, records['data'][-1]['objectId'])
 
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
-              str(len(records['docs'])) + '\t\t' + 'NextPageStartKey: ' + str(nextPageStartKey))
+              str(len(records)) + '\t\t' + 'nextPageCursor: ' + str(nextPageCursor))
         iteration += 1
     print('All records exported!!!!')
