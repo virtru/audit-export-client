@@ -97,14 +97,14 @@ def saveNextPageCursor(nextPageCursor, lastRecordSaved):
 
     print(nextPageCursor)
     print(lastRecordSaved)
-    bookMarkConfig = configparser.ConfigParser()
-    bookMarkConfig['next-page-cursor'] = {
+    cursorConfig = configparser.ConfigParser()
+    cursorConfig['next-page-cursor'] = {
         'nextPageCursor': nextPageCursor or '',
         'lastRecordSaved': lastRecordSaved
     }
     os.makedirs(os.path.dirname(CURSOR_PATH), exist_ok=True)
     with open(CURSOR_PATH, 'w') as cursorFile:
-        bookMarkConfig.write(cursorFile)
+        cursorConfig.write(cursorFile)
 
 
 def exportToJson(pathToFolder, records):
