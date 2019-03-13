@@ -95,8 +95,6 @@ def getnextPageCursor():
 def saveNextPageCursor(nextPageCursor, lastRecordSaved):
     logger.debug('saving next-page-cursor.....')
 
-    print(nextPageCursor)
-    print(lastRecordSaved)
     cursorConfig = configparser.ConfigParser()
     cursorConfig['next-page-cursor'] = {
         'nextPageCursor': nextPageCursor or '',
@@ -121,7 +119,7 @@ def exportToCsv(pathToFolder, records):
     logger.debug('exporting records to csv.....')
 
     for record in records:
-        auditType = record['type']
+        auditType = record['object']['type']
         fileName = auditType + ".csv"
         __writeCsvFile(auditType, pathToFolder, fileName, record)
 
@@ -139,7 +137,7 @@ def exportToSysLog(host, port, syslogger, records):
 
         adapter = logging.LoggerAdapter(
             syslogger, {'data': str(formattedStructData)})
-        adapter.info('virtru-audit-%s', record['type'])
+        adapter.info('virtru-audit-%s', record['object']['type'])
 
 
 def configSysLogger(host, port):
