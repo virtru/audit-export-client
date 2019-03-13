@@ -13,7 +13,7 @@ SOME_HOST = 'audit.virtru.com'
 SOME_PATH = '/api/messages'
 SOME_RECORD_ID_1 = 'some-record-id'
 CURSOR = {
-    'nextpagestartkey': 'some-next-page-key'
+    'cursor': 'some-next-page-key'
 }
 
 SOME_CONFIG = {
@@ -101,7 +101,7 @@ def test_process_with_cursor(mock_audit_client, mock_utils):
         'query': {
             'start': '2017',
             'end': '2018',
-            'nextPageStartKey': CURSOR['nextpagestartkey']
+            'nextPageStartKey': CURSOR['cursor']
         }
     })
 
