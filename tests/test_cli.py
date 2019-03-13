@@ -12,7 +12,7 @@ SOME_SECRET = 'some-secret'
 SOME_HOST = 'audit.virtru.com'
 SOME_PATH = '/api/messages'
 SOME_RECORD_ID_1 = 'some-record-id'
-BOOKMARK = {
+CURSOR = {
     'nextpagestartkey': 'some-next-page-key'
 }
 
@@ -43,14 +43,14 @@ def mock_audit_client(mock_response):
 
 
 MockArgs = namedtuple(
-    'Args', 'startDate endDate csv json sysloghost syslogport useBookMark')
+    'Args', 'startDate endDate csv json sysloghost syslogport useCursor')
 
 
 @pytest.fixture
 def mock_utils():
     mock_utils = Mock(spec=utils)
     mock_utils.getConfig.return_value = SOME_CONFIG
-    mock_utils.getNextPageStartKey.return_value = BOOKMARK
+    mock_utils.getNextPageStartKey.return_value = CURSOR
     mock_utils.saveNextPageStartKey.return_value = None
     mock_utils.exportToJson.return_value = None
     mock_utils.exportToCsv.return_value = None
@@ -61,7 +61,7 @@ def mock_utils():
 
 def test_process_succeeds_no_options(mock_utils, mock_audit_client):
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useBookMark=False)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False)
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getNextPageStartKey.assert_called_with()
     mock_utils.saveNextPageStartKey.assert_not_called()
@@ -79,7 +79,7 @@ def test_process_succeeds_no_options(mock_utils, mock_audit_client):
 
 def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_response):
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useBookMark='some-bmk')
+                    endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useCursor='some-bmk')
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getNextPageStartKey.assert_called_with()
     mock_utils.saveNextPageStartKey.assert_called_with(SOME_RECORD_ID_1)
@@ -91,17 +91,17 @@ def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_respo
         'some-syslog', '514', mock_utils.configSysLogger('some-syslog', '514'), mock_response['docs'])
 
 
-def test_process_with_bookMark(mock_audit_client, mock_utils):
-    mock_utils.getNextPageStartKey.return_value = BOOKMARK
+def test_process_with_cursor(mock_audit_client, mock_utils):
+    mock_utils.getNextPageStartKey.return_value = CURSOR
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useBookMark=True)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
     cli.process(args, mock_audit_client, mock_utils)
     mock_audit_client.fetchRecords.assert_called_with({
         'method': 'GET',
         'query': {
             'start': '2017',
             'end': '2018',
-            'nextPageStartKey': BOOKMARK['nextpagestartkey']
+            'nextPageStartKey': CURSOR['nextpagestartkey']
         }
     })
 
@@ -130,7 +130,7 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
         mock_response_1, mock_response_2]
 
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useBookMark=False)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False)
     cli.process(args, mock_audit_client, mock_utils)
     assert mock_audit_client.fetchRecords.call_count == 2
     assert mock_utils.saveNextPageStartKey.call_count == 0
@@ -140,6 +140,6 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
 
 def test_process_throws_on_invalid_date(mock_audit_client, mock_utils):
     args = MockArgs(startDate='201ask',
-                    endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useBookMark=True)
+                    endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
     with pytest.raises(iso8601.ParseError):
         cli.process(args, mock_audit_client, mock_utils)
