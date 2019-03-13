@@ -142,15 +142,12 @@ def process(args, auditclient, utils):
     while hasMore:
         payload = auditclient.fetchRecords(req)
         records = payload['data'] if not cursor else utils.checkRecords(payload['data'], lastRecordId)
-        if len(records) == 0:
-            hasMore = False
-            break
 
-        if(jsonFolderPath and records):
+        if(jsonFolderPath and len(records)):
             utils.exportToJson(jsonFolderPath, records)
-        if(csvFolderPath and records):
+        if(csvFolderPath and len(records)):
             utils.exportToCsv(csvFolderPath, records)
-        if(syslogHost is not None and records):
+        if(syslogHost is not None and len(records)):
             utils.exportToSysLog(syslogHost, syslogPort,
                                  syslogger, records)
 
@@ -163,7 +160,8 @@ def process(args, auditclient, utils):
             nextPageCursor = None
 
         if(useCursor):
-            utils.saveNextPageCursor(nextPageCursor, records[-1]['recordId'])
+            newLastRecord = lastRecordId if not len(records) else records[-1]['recordId']
+            utils.saveNextPageCursor(nextPageCursor, newLastRecord)
 
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records)) + '\t\t' + 'nextPageCursor: ' + str(nextPageCursor))
