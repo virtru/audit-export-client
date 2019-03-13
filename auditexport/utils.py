@@ -76,7 +76,7 @@ def checkRecords(records=[], savedId=None):
     if not savedId:
         return records
     for i in range(len(records)):
-        if records[i] == savedId:
+        if records[i]['recordId'] == savedId:
             return records[i+1:]
     return records
 
@@ -95,9 +95,11 @@ def getnextPageCursor():
 def saveNextPageCursor(nextPageCursor, lastRecordSaved):
     logger.debug('saving next-page-cursor.....')
 
+    print(nextPageCursor)
+    print(lastRecordSaved)
     bookMarkConfig = configparser.ConfigParser()
     bookMarkConfig['next-page-cursor'] = {
-        'nextPageCursor': nextPageCursor,
+        'nextPageCursor': nextPageCursor or '',
         'lastRecordSaved': lastRecordSaved
     }
     os.makedirs(os.path.dirname(CURSOR_PATH), exist_ok=True)

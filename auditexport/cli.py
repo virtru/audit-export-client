@@ -56,8 +56,7 @@ def main():
                         help='Number of records we pull for each chunk when we use --cursor. Default is 100',
                         dest='limit',
                         default=100,
-                        required=False,
-                        action='store_true')
+                        required=False)
     parser.add_argument('-v', '--verbose',
                         help='Verbose option',
                         dest='verbose',
@@ -132,6 +131,8 @@ def process(args, auditclient, utils):
 
     if(nextPageCursor and useCursor):
         req['query']['nextPageCursor'] = nextPageCursor
+
+    if(useCursor):
         req['query']['limit'] = limit
 
     hasMore = True
@@ -141,6 +142,9 @@ def process(args, auditclient, utils):
     while hasMore:
         payload = auditclient.fetchRecords(req)
         records = payload['data'] if not cursor else utils.checkRecords(payload['data'], lastRecordId)
+        if len(records) == 0:
+            hasMore = False
+            break
 
         if(jsonFolderPath and records):
             utils.exportToJson(jsonFolderPath, records)
@@ -152,14 +156,14 @@ def process(args, auditclient, utils):
 
         if 'after' in payload['cursor']:
             logger.debug('found next cursor')
-            nextPageCursor = payload['cursor']
+            nextPageCursor = payload['cursor']['after']
             req['query']['cursor'] = nextPageCursor
         else:
             hasMore = False
             nextPageCursor = None
 
-        if(useCursor and nextPageCursor):
-            utils.saveNextPageCursor(nextPageCursor, records['data'][-1]['objectId'])
+        if(useCursor):
+            utils.saveNextPageCursor(nextPageCursor, records[-1]['recordId'])
 
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records)) + '\t\t' + 'nextPageCursor: ' + str(nextPageCursor))
