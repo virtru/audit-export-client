@@ -14,7 +14,7 @@ SOME_PATH = '/api/messages'
 SOME_RECORD_ID_1 = 'some-record-id'
 CURSOR = {
     'nextPageCursor': 'some-next-page-key',
-    'lastRecordSaved': 'some-record'
+    'lastRecordSaved': 'some-record-id'
 }
 
 SOME_CONFIG = {
@@ -83,22 +83,22 @@ def test_process_succeeds_no_options(mock_utils, mock_audit_client):
 
 
 def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_response):
-    args = MockArgs(startDate='2017',
+    args = MockArgs(startDate='2017', limit=False,
                     endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useCursor='some-bmk')
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getnextPageCursor.assert_called_with()
-    mock_utils.saveNextPageCursor.assert_called_with(SOME_RECORD_ID_1)
+    mock_utils.saveNextPageCursor.assert_called_with(None, SOME_RECORD_ID_1)
     mock_utils.exportToJson.assert_called_with(
-        'some-json', mock_response['docs'])
+        'some-json', mock_response['data'])
     mock_utils.exportToCsv.assert_called_with(
-        'some-csv', mock_response['docs'])
+        'some-csv', mock_response['data'])
     mock_utils.exportToSysLog.assert_called_with(
-        'some-syslog', '514', mock_utils.configSysLogger('some-syslog', '514'), mock_response['docs'])
+        'some-syslog', '514', mock_utils.configSysLogger('some-syslog', '514'), mock_response['data'])
 
 
 def test_process_with_cursor(mock_audit_client, mock_utils):
     mock_utils.getnextPageCursor.return_value = CURSOR
-    args = MockArgs(startDate='2017',
+    args = MockArgs(startDate='2017', limit=False,
                     endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
     cli.process(args, mock_audit_client, mock_utils)
     mock_audit_client.fetchRecords.assert_called_with({
@@ -134,7 +134,7 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
     mock_audit_client.fetchRecords.side_effect = [
         mock_response_1, mock_response_2]
 
-    args = MockArgs(startDate='2017',
+    args = MockArgs(startDate='2017', limit=False,
                     endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False)
     cli.process(args, mock_audit_client, mock_utils)
     assert mock_audit_client.fetchRecords.call_count == 2
@@ -144,7 +144,7 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
 
 
 def test_process_throws_on_invalid_date(mock_audit_client, mock_utils):
-    args = MockArgs(startDate='201ask',
+    args = MockArgs(startDate='201ask', limit=False,
                     endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
     with pytest.raises(iso8601.ParseError):
         cli.process(args, mock_audit_client, mock_utils)
