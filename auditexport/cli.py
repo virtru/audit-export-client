@@ -130,7 +130,7 @@ def process(args, auditclient, utils):
     }
 
     if(nextPageCursor and useCursor):
-        req['query']['nextPageCursor'] = nextPageCursor
+        req['query']['cursor'] = nextPageCursor
 
     if(useCursor):
         req['query']['limit'] = limit
@@ -142,6 +142,11 @@ def process(args, auditclient, utils):
     while hasMore:
         payload = auditclient.fetchRecords(req)
         records = payload['data'] if not cursor else utils.checkRecords(payload['data'], lastRecordId)
+        if(len(records)):
+            lastRecordId = records[-1]['recordId']
+        else:
+            hasMore = False
+            break
 
         if(jsonFolderPath and len(records)):
             utils.exportToJson(jsonFolderPath, records)
@@ -157,13 +162,13 @@ def process(args, auditclient, utils):
             req['query']['cursor'] = nextPageCursor
         else:
             hasMore = False
-            nextPageCursor = None
 
         if(useCursor):
-            newLastRecord = lastRecordId if not len(records) else records[-1]['recordId']
-            utils.saveNextPageCursor(nextPageCursor, newLastRecord)
+            utils.saveNextPageCursor(nextPageCursor, lastRecordId)
+
+        cursorToPrint = str(nextPageCursor) if hasMore else 'None'
 
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
-              str(len(records)) + '\t\t' + 'nextPageCursor: ' + str(nextPageCursor))
+              str(len(records)) + '\t\t' + 'nextPageCursor: ' + cursorToPrint)
         iteration += 1
     print('All records exported!!!!')
