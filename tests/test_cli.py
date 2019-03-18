@@ -1,6 +1,7 @@
 import pytest
 import base64
 import iso8601
+import copy
 from string import Template
 from auditexport import utils, cli
 from auditexport.auditclient import AuditClient
@@ -28,9 +29,7 @@ SOME_CONFIG = {
 @pytest.fixture
 def mock_response():
     return {
-        'cursor': {
-
-        },
+        'cursor': {},
         'data': [
             {
                 'recordId': SOME_RECORD_ID_1
@@ -54,6 +53,7 @@ MockArgs = namedtuple(
 def mock_utils():
     mock_utils = MagicMock(spec=utils)
     mock_utils.getConfig.return_value = SOME_CONFIG
+    mock_utils.checkRecords.return_value = [{'recordId': SOME_RECORD_ID_1}]
     mock_utils.getnextPageCursor.return_value = CURSOR
     mock_utils.saveNextPageCursor.return_value = None
     mock_utils.exportToJson.return_value = None
@@ -65,7 +65,7 @@ def mock_utils():
 
 def test_process_succeeds_no_options(mock_utils, mock_audit_client):
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=False)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=100)
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getnextPageCursor.assert_called_with()
     mock_utils.saveNextPageCursor.assert_not_called()
@@ -77,17 +77,19 @@ def test_process_succeeds_no_options(mock_utils, mock_audit_client):
         'query': {
             'start': '2017',
             'end': '2018',
+            'limit': 100,
             'sort': 'timestamp:asc'
         }
     })
 
 
 def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_response):
-    args = MockArgs(startDate='2017', limit=False,
+    args = MockArgs(startDate='2017', limit=150,
                     endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useCursor='some-bmk')
     cli.process(args, mock_audit_client, mock_utils)
+    mock_utils.checkRecords.assert_called_with([{'recordId': 'some-record-id'}], 'some-record-id')
     mock_utils.getnextPageCursor.assert_called_with()
-    mock_utils.saveNextPageCursor.assert_called_with(None, SOME_RECORD_ID_1)
+    mock_utils.saveNextPageCursor.assert_called_with(CURSOR['nextPageCursor'], SOME_RECORD_ID_1)
     mock_utils.exportToJson.assert_called_with(
         'some-json', mock_response['data'])
     mock_utils.exportToCsv.assert_called_with(
@@ -98,7 +100,7 @@ def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_respo
 
 def test_process_with_cursor(mock_audit_client, mock_utils):
     mock_utils.getnextPageCursor.return_value = CURSOR
-    args = MockArgs(startDate='2017', limit=False,
+    args = MockArgs(startDate='2017', limit=200,
                     endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
     cli.process(args, mock_audit_client, mock_utils)
     mock_audit_client.fetchRecords.assert_called_with({
@@ -106,11 +108,13 @@ def test_process_with_cursor(mock_audit_client, mock_utils):
         'query': {
             'start': '2017',
             'end': '2018',
-            'cursor': CURSOR['cursor']
+            'sort': 'timestamp:asc',
+            'cursor': CURSOR['nextPageCursor'],
+            'limit': 200
         }
     })
 
-
+## here
 def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_response):
     mock_audit_client.fetchRecords.return_value = None
     SOME_NEXT_PAGE_KEY = 'some-start-key'
@@ -129,12 +133,12 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
         }
     })]
     mock_response_2 = mock_response
-    mock_response_1 = dict(mock_response)
-    mock_response_1['cursor'] = SOME_NEXT_PAGE_KEY
+    mock_response_1 = copy.deepcopy(mock_response)
+    mock_response_1['cursor']['after'] = SOME_NEXT_PAGE_KEY
     mock_audit_client.fetchRecords.side_effect = [
         mock_response_1, mock_response_2]
 
-    args = MockArgs(startDate='2017', limit=False,
+    args = MockArgs(startDate='2017', limit=100,
                     endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False)
     cli.process(args, mock_audit_client, mock_utils)
     assert mock_audit_client.fetchRecords.call_count == 2

@@ -132,8 +132,7 @@ def process(args, auditclient, utils):
     if(nextPageCursor and useCursor):
         req['query']['cursor'] = nextPageCursor
 
-    if(useCursor):
-        req['query']['limit'] = limit
+    req['query']['limit'] = limit
 
     hasMore = True
     iteration = 1
