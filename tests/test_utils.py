@@ -39,6 +39,13 @@ def test_getConfig_throws(tmpdir):
         utils.getConfig(str(fakeConfigFile))
 
 
+def test_checkRecords():
+    arr_to_check = [{'recordId': 'foo'}, {'recordId': 'bar'}, {'recordId': 'baz'}]
+    assert utils.checkRecords(arr_to_check, 'bar') == [{'recordId': 'baz'}]
+    assert utils.checkRecords() == []
+    assert utils.checkRecords(arr_to_check, 'barBaz') == arr_to_check
+
+
 def test_getConfig_succeeds(tmpdir):
     someid = 'someid'
     somesecret = 'somesecret'

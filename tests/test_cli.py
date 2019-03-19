@@ -62,6 +62,14 @@ def mock_utils():
     mock_utils.configSysLogger.return_value = 'some-logger'
     return mock_utils
 
+@pytest.fixture
+def mock_utiles_checkrecords():
+    mock_utils = MagicMock(spec=utils)
+    mock_utils.getnextPageCursor.return_value = CURSOR
+    mock_utils.getnextPageCursor.checkRecords = []
+    mock_utils.saveNextPageCursor.return_value = None
+    return mock_utils
+
 
 def test_process_succeeds_no_options(mock_utils, mock_audit_client):
     args = MockArgs(startDate='2017',
@@ -114,7 +122,14 @@ def test_process_with_cursor(mock_audit_client, mock_utils):
         }
     })
 
-## here
+def test_process_with_no_new_records_to_save(mock_utiles_checkrecords, mock_audit_client):
+    args = MockArgs(startDate='2017',
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=100)
+    cli.process(args, mock_audit_client, mock_utiles_checkrecords)
+    mock_utiles_checkrecords.saveNextPageCursor.assert_not_called()
+    assert mock_audit_client.fetchRecords.call_count == 1
+
+
 def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_response):
     mock_audit_client.fetchRecords.return_value = None
     SOME_NEXT_PAGE_KEY = 'some-start-key'
