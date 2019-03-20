@@ -91,6 +91,10 @@ def getnextPageCursor():
     else:
         return cursor['next-page-cursor']
 
+def flattenObjectProp(record):
+    editedRecord = {**record, **record['object']}
+    del(editedRecord['object'])
+    return editedRecord
 
 def saveNextPageCursor(nextPageCursor, lastRecordSaved):
     logger.debug('saving next-page-cursor.....')
@@ -107,27 +111,30 @@ def saveNextPageCursor(nextPageCursor, lastRecordSaved):
 
 def exportToJson(pathToFolder, records):
     logger.debug('exporting records to json.....')
+    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
 
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, "w") as f:
-        json.dump(records, f, sort_keys=True,
+        json.dump(preparedRecords, f, sort_keys=True,
                   indent=4, separators=(',', ': '))
 
 
 def exportToCsv(pathToFolder, records):
     logger.debug('exporting records to csv.....')
+    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
 
-    for record in records:
-        auditType = record['object']['type']
+    for record in preparedRecords:
+        auditType = record['type']
         fileName = auditType + ".csv"
         __writeCsvFile(auditType, pathToFolder, fileName, record)
 
 
 def exportToSysLog(host, port, syslogger, records):
     logger.debug('exporting to records to syslog......')
+    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
 
-    for record in records:
+    for record in preparedRecords:
         # Flatten out dictionary
         formattedRecord = __flatten(record)
 
@@ -137,7 +144,7 @@ def exportToSysLog(host, port, syslogger, records):
 
         adapter = logging.LoggerAdapter(
             syslogger, {'data': str(formattedStructData)})
-        adapter.info('virtru-audit-%s', record['object']['type'])
+        adapter.info('virtru-audit-%s', record['type'])
 
 
 def configSysLogger(host, port):
