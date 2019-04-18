@@ -140,7 +140,8 @@ def process(args, auditclient, utils):
     logger.debug('fetching audit records....')
     while hasMore:
         payload = auditclient.fetchRecords(req)
-        records = payload['data'] if not cursor else utils.checkRecords(payload['data'], lastRecordId)
+        records = payload['data'] if not cursor else utils.checkRecords(
+            payload['data'], lastRecordId)
         if(len(records)):
             lastRecordId = records[-1]['recordId']
         else:
