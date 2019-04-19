@@ -13,7 +13,7 @@ from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
 EXPORT_DIR = '.auditexport'
-BOOK_MARK_PATH = '%s/bookmark.ini' % (EXPORT_DIR)
+CURSOR_PATH = '%s/cursor.ini' % (EXPORT_DIR)
 
 
 logger = logging.getLogger(__name__)
@@ -72,43 +72,59 @@ def getConfig(configFile=''):
         'apiPath': apiPath
     }
 
+def checkRecords(records=[], savedId=None):
+    if not savedId:
+        return records
+    for i in range(len(records)):
+        if records[i]['recordId'] == savedId:
+            return records[i+1:]
+    return records
 
-def getNextPageStartKey():
-    bookmark = configparser.ConfigParser()
-    bookmark.read(BOOK_MARK_PATH)
+
+def getnextPageCursor():
+    cursor = configparser.ConfigParser()
+    cursor.read(CURSOR_PATH)
 
     # Config Parser returns an empty dataset if file does not exist
-    if len(bookmark) <= 1:
+    if len(cursor) <= 1:
         return None
     else:
-        return bookmark['next-page-start-key']
+        return cursor['next-page-cursor']
 
+def flattenObjectProp(record):
+    editedRecord = {**record, **record['object']}
+    del(editedRecord['object'])
+    return editedRecord
 
-def saveNextPageStartKey(nextPageStartKey):
-    logger.debug('saving nexpagestartkey.....')
+def saveNextPageCursor(nextPageCursor, lastRecordSaved):
+    logger.debug('saving next-page-cursor.....')
 
-    bookMarkConfig = configparser.ConfigParser()
-    bookMarkConfig['next-page-start-key'] = {
-        'nextPageStartKey': nextPageStartKey}
-    os.makedirs(os.path.dirname(BOOK_MARK_PATH), exist_ok=True)
-    with open(BOOK_MARK_PATH, 'w') as bookMarkFile:
-        bookMarkConfig.write(bookMarkFile)
+    cursorConfig = configparser.ConfigParser()
+    cursorConfig['next-page-cursor'] = {
+        'nextPageCursor': nextPageCursor or '',
+        'lastRecordSaved': lastRecordSaved
+    }
+    os.makedirs(os.path.dirname(CURSOR_PATH), exist_ok=True)
+    with open(CURSOR_PATH, 'w') as cursorFile:
+        cursorConfig.write(cursorFile)
 
 
 def exportToJson(pathToFolder, records):
     logger.debug('exporting records to json.....')
+    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
 
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, "w") as f:
-        json.dump(records, f, sort_keys=True,
+        json.dump(preparedRecords, f, sort_keys=True,
                   indent=4, separators=(',', ': '))
 
 
 def exportToCsv(pathToFolder, records):
     logger.debug('exporting records to csv.....')
+    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
 
-    for record in records:
+    for record in preparedRecords:
         auditType = record['type']
         fileName = auditType + ".csv"
         __writeCsvFile(auditType, pathToFolder, fileName, record)
@@ -116,8 +132,9 @@ def exportToCsv(pathToFolder, records):
 
 def exportToSysLog(host, port, syslogger, records):
     logger.debug('exporting to records to syslog......')
+    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
 
-    for record in records:
+    for record in preparedRecords:
         # Flatten out dictionary
         formattedRecord = __flatten(record)
 

@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 VJWT_TTL_SECONDS = 300.0
 API_HOST = 'audit.virtru.com'
 API_PATH = '/api/messages'
+CLIENT_NAME = 'AuditPythonClient:v2.0.0'
+API_VERSION = 'v2'
 
 
 class AuditClient:
@@ -64,7 +66,9 @@ class AuditClient:
 
         headers = {
             'Authorization': 'VJWTv1.0.0 ' + vjwtString.decode(),
-            'Connection': 'close'
+            'Connection': 'close',
+            'X-Virtru-Client': CLIENT_NAME,
+            'Accept-Version': API_VERSION
         }
         apiUrl = self.apiHost + self.apiPath
 

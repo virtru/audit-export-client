@@ -48,15 +48,16 @@ to export audit records to csv, provide a path to a folder
 to export audit records to syslog, provide a host and a port
 ### `--sysloghost=0.0.0.0 --syslogport=514`
 
-to pull records since the last time the script was run, set the bookmark option
-### `--bookmark` or `-b`
-you can also provide a `bookmark.ini` file, in  the `.auditexport` directory, which will tell the script where to start pulling records
+to pull records since the last time the script was run, set the cursor option
+### `--cursor` or `-c`
+you can also provide a `cursor.ini` file, in  the `.auditexport` directory, which will tell the script where to start pulling records
 
 ```ini
-#bookmark.ini
+#cursor.ini
 
 [next-page-start-key]
-nextpagestartkey=<next-page-start-index>
+nextpagecursor=<next-page-cursor>
+lastrecordsaved=<recordId>
 
 ```
 
