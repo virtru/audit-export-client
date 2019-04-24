@@ -8,7 +8,7 @@ start = "python -m auditexport"
 test = "pytest"
 
 [packages]
-requests = "*"
+requests = "~=2.21"
 pyjwt = "*"
 "rfc5424-logging-handler" = "*"
 pytest = "*"
