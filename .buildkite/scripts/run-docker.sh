@@ -1,2 +1,9 @@
-docker build -t audit-export-client .
-docker run audit-export-client
+/bin/bash
+
+set -eu
+
+pip install pipenv
+
+pipenv install --three
+
+pipenv run test

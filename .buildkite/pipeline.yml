@@ -1,2 +1,2 @@
-  - label: ":docker: Run Docker"
-    command: ".buildkite/scripts/run-docker.sh"
+  - label: ":docker: Run Docker Tests"
+    command: "docker-compose up"
