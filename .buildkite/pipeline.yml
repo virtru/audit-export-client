@@ -1,2 +1,8 @@
-  - label: ":docker: Run Docker Tests"
-    command: "docker-compose up"
+# Test
+- label: ":docker: Run Docker Tests"
+  command: "docker-compose up"
+
+# Tag and release
+- label: ":virtru: Tag Release"
+  command: "buildkite-scripts/scripts/tag-release.sh"
+  branches: "master"
