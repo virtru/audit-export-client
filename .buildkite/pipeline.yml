@@ -1,0 +1,2 @@
+  - label: ":python: Install"
+    command: ".buildkite/scripts/install.sh"
