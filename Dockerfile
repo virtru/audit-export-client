@@ -4,6 +4,6 @@ COPY . .
 
 RUN pip install pipenv
 
-RUN pipenv install --three
+RUN pipenv install --three --system --deploy
 
 CMD [ "pipenv", "run", "test" ]
