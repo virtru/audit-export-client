@@ -1,2 +1,2 @@
-  - label: ":python: Install"
-    command: ".buildkite/scripts/install.sh"
+  - label: ":docker: Run Docker"
+    command: ".buildkite/scripts/run-docker.sh"
