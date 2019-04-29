@@ -1,9 +1,8 @@
 # Test
 - label: ":docker: Run Docker Tests"
-  command: ".buildkite/scripts/run-docker-tests.sh"
   plugins:
     - docker-compose#v3.0.0:
-        run: tests
+        run: app
         config:
           - docker-compose.yml
 
