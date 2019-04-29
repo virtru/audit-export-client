@@ -1,5 +1,6 @@
 # Test
 - label: ":docker: Run Docker Tests"
+  command: ".builsrun-docker-tests.sh"
   plugins:
     - docker-compose#v3.0.0:
         run: tests
