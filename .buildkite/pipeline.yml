@@ -1,6 +1,10 @@
 # Test
 - label: ":docker: Run Docker Tests"
-  command: "docker-compose up"
+  plugins:
+    - docker-compose#v3.0.0:
+        run: tests
+        config:
+          - docker-compose.yml
 
 # Tag and release
 - label: ":virtru: Tag Release"
