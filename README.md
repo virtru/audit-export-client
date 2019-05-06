@@ -1,3 +1,5 @@
+[![Build Status](https://badge.buildkite.com/166e874e86a6ffde87aa00021d68367e89d5d08a206d1f5cbf.svg)](https://buildkite.com/virtru/audit-export-client)
+
 # Virtru Audit Export Client
 
 Python client for pulling audit data from the Virtru audit API.
