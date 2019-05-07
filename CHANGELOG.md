@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/virtru/virtru-audit-export-client/compare/master...HEAD)
 
+## [2.0.2](https://github.com/virtru/audit-export-client/pull/9) - 2019-05-07
+## Added
+  - Add leeway to `iat` field of token to account for clock skew
+  - Add  `MIT` license
+
+## [2.0.1](https://github.com/virtru/audit-export-client/pull/7) - 2019-04-24
+## Fixed
+  - Address vulnerability with `urllib3`
+
 ## [2.0.0](https://github.com/virtru/audit-export-client/pull/5) - 2019-03-25
 ## Added
  - Changed cli logic for using elastic search api
