@@ -18,6 +18,7 @@ API_HOST = 'audit.virtru.com'
 API_PATH = '/api/messages'
 CLIENT_NAME = 'AuditPythonClient:v2.0.0'
 API_VERSION = 'v2'
+IAT_LEEWAY_SECONDS = 300.0
 
 
 class AuditClient:
@@ -123,7 +124,7 @@ class AuditClient:
 
         payload = {
             'sub': self.apiTokenId,
-            'iat': int(time.time()),
+            'iat': int(time.time()-IAT_LEEWAY_SECONDS),
             'jti': nonce,
             'rsha': self._generateRsha(method, self.apiHost, self.apiPath, queryParams),
             'rqps': ','.join(queryKeys),
