@@ -18,7 +18,7 @@ API_HOST = 'audit.virtru.com'
 API_PATH = '/api/messages'
 CLIENT_NAME = 'AuditPythonClient:v2.0.0'
 API_VERSION = 'v2'
-IAT_LEEWAY_SECONDS = 300.0
+IAT_LEEWAY_SECONDS = 30.0
 
 
 class AuditClient:

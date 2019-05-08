@@ -6,8 +6,7 @@
         config:
           - docker-compose.yml
 
-# Comment out for now
 # Tag and release
-# - label: ":virtru: Tag Release"
-#   command: "buildkite-scripts/scripts/tag-release.sh"
-#   branches: "master"
+- label: ":virtru: Tag Release"
+  command: "buildkite-scripts/scripts/tag-release.sh"
+  branches: "master"
