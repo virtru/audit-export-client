@@ -11,15 +11,17 @@ import logging
 from binascii import Error
 from . import errors
 
+with open('VERSION') as version_file:
+    version = version_file.read()
+
 logger = logging.getLogger(__name__)
 
 VJWT_TTL_SECONDS = 300.0
 API_HOST = 'audit.virtru.com'
 API_PATH = '/api/messages'
-CLIENT_NAME = 'AuditPythonClient:v2.0.0'
+CLIENT_NAME = 'AuditPythonClient:v%s'%(version)
 API_VERSION = 'v2'
 IAT_LEEWAY_SECONDS = 30.0
-
 
 class AuditClient:
     """Audit Client for fetching audit records."""

@@ -7,7 +7,6 @@ from .auditclient import AuditClient
 
 logger = logging.getLogger(__name__)
 
-
 def main():
     parser = argparse.ArgumentParser(prog='VirtruAuditExportClient',
                                      description='Allows the export of audit data from a secure Virtru endpoint.')
