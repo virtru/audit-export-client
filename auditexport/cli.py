@@ -1,7 +1,4 @@
-import argparse
-import logging
-import sys
-import iso8601
+import argparse, logging, sys, os, iso8601
 from . import utils
 from .auditclient import AuditClient
 
@@ -135,6 +132,8 @@ def process(args, auditclient, utils):
 
     hasMore = True
     iteration = 1
+    if csvFolderPath:
+        auditTypes = {}
 
     logger.debug('fetching audit records....')
     while hasMore:
@@ -150,7 +149,7 @@ def process(args, auditclient, utils):
         if(jsonFolderPath and len(records)):
             utils.exportToJson(jsonFolderPath, records)
         if(csvFolderPath and len(records)):
-            utils.exportToCsv(csvFolderPath, records)
+            utils.exportToCsv(csvFolderPath, records, auditTypes)
         if(syslogHost is not None and len(records)):
             utils.exportToSysLog(syslogHost, syslogPort,
                                  syslogger, records)
@@ -170,4 +169,8 @@ def process(args, auditclient, utils):
         print('Iteration :' + str(iteration) + '\t\t' + 'Items: ' +
               str(len(records)) + '\t\t' + 'nextPageCursor: ' + cursorToPrint)
         iteration += 1
-    print('All records exported!!!!')
+    
+    if not hasMore and iteration == 1:
+        print('No records found / exported.')
+    else:
+        print('All records exported!!!!')

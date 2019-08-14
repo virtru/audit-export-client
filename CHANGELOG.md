@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/virtru/virtru-audit-export-client/compare/master...HEAD)
 
+## [2.0.3](https://github.com/virtru/audit-export-client/pull/10) - 2019-08-14
+## Added
+  - Fix export to csv so that exported file does not duplicate csv headers
+  - Rewrite csv file to path specified at runtime instead of appending
+
 ## [2.0.2](https://github.com/virtru/audit-export-client/pull/9) - 2019-05-07
 ## Added
   - Add leeway to `iat` field of token to account for clock skew

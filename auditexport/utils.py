@@ -1,14 +1,4 @@
-import configparser
-import datetime
-import time
-import os
-import json
-import sys
-import csv
-import pathlib
-import logging
-import socket
-import re
+import configparser, datetime, time, os, json, sys, csv, pathlib, logging, socket, re
 from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
@@ -108,10 +98,14 @@ def saveNextPageCursor(nextPageCursor, lastRecordSaved):
     with open(CURSOR_PATH, 'w') as cursorFile:
         cursorConfig.write(cursorFile)
 
+def pre_export(fileFormat, records):
+    logger.debug('exporting records to ' + fileFormat + '.....')
+    preparedRecords = [flattenObjectProp(record) for record in records]
+    return preparedRecords
+
 
 def exportToJson(pathToFolder, records):
-    logger.debug('exporting records to json.....')
-    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
+    preparedRecords = pre_export('json', records)
 
     fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
     fn = os.path.join(pathToFolder, fileName)
@@ -120,19 +114,22 @@ def exportToJson(pathToFolder, records):
                   indent=4, separators=(',', ': '))
 
 
-def exportToCsv(pathToFolder, records):
-    logger.debug('exporting records to csv.....')
-    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
+def exportToCsv(pathToFolder, records, auditTypes):
+    preparedRecords = pre_export('csv', records)
 
     for record in preparedRecords:
         auditType = record['type']
         fileName = auditType + ".csv"
-        __writeCsvFile(auditType, pathToFolder, fileName, record)
+        filePath = os.path.join(pathToFolder, fileName)
+        if record['type'] not in auditTypes:
+            auditTypes[record['type']] = 1
+            if os.path.exists(filePath):
+                os.remove(filePath)
+        __writeCsvFile(auditType, filePath, record, auditTypes)
 
 
 def exportToSysLog(host, port, syslogger, records):
-    logger.debug('exporting to records to syslog......')
-    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
+    preparedRecords = pre_export('syslog', records)
 
     for record in preparedRecords:
         # Flatten out dictionary
@@ -178,13 +175,18 @@ def __flatten(dic):
     return dic
 
 
-def __writeCsvFile(auditType, pathToFolder, fileName, record):
-    filePath = os.path.join(pathToFolder, fileName)
-    with open(filePath, 'a', newline='') as csvfile:
-        fieldnames = record.keys()
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerow(record)
+def __writeCsvFile(auditType, filePath, record, auditTypes):
+    
+    if not os.path.exists(filePath) and record['type'] in auditTypes:
+        with open(filePath, 'w', newline='') as csvfile:
+            fieldnames = record.keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+    else:
+        with open(filePath, 'a', newline='') as csvfile:
+            fieldnames = record.keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writerow(record)
 
 
 class InvalidConfigError(AuditClientError):
