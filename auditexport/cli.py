@@ -132,8 +132,7 @@ def process(args, auditclient, utils):
 
     hasMore = True
     iteration = 1
-    if csvFolderPath:
-        auditTypes = {}
+    writeHeaders = {}
 
     logger.debug('fetching audit records....')
     while hasMore:
@@ -149,7 +148,7 @@ def process(args, auditclient, utils):
         if(jsonFolderPath and len(records)):
             utils.exportToJson(jsonFolderPath, records)
         if(csvFolderPath and len(records)):
-            utils.exportToCsv(csvFolderPath, records, auditTypes)
+            utils.exportToCsv(csvFolderPath, records, writeHeaders)
         if(syslogHost is not None and len(records)):
             utils.exportToSysLog(syslogHost, syslogPort,
                                  syslogger, records)

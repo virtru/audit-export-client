@@ -114,18 +114,20 @@ def exportToJson(pathToFolder, records):
                   indent=4, separators=(',', ': '))
 
 
-def exportToCsv(pathToFolder, records, auditTypes):
+def exportToCsv(pathToFolder, records, writeHeaders):
     preparedRecords = pre_export('csv', records)
 
     for record in preparedRecords:
         auditType = record['type']
         fileName = auditType + ".csv"
         filePath = os.path.join(pathToFolder, fileName)
-        if record['type'] not in auditTypes:
-            auditTypes[record['type']] = 1
-            if os.path.exists(filePath):
-                os.remove(filePath)
-        __writeCsvFile(auditType, filePath, record, auditTypes)
+        
+        if record['type'] not in writeHeaders:
+            writeHeaders[record['type']] = True
+        elif writeHeaders[record['type']]:
+            writeHeaders[record['type']] = False
+
+        __writeCsvFile(auditType, filePath, record, writeHeaders[record['type']])
 
 
 def exportToSysLog(host, port, syslogger, records):
@@ -175,18 +177,12 @@ def __flatten(dic):
     return dic
 
 
-def __writeCsvFile(auditType, filePath, record, auditTypes):
-    
-    if not os.path.exists(filePath) and record['type'] in auditTypes:
-        with open(filePath, 'w', newline='') as csvfile:
-            fieldnames = record.keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-    else:
-        with open(filePath, 'a', newline='') as csvfile:
-            fieldnames = record.keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerow(record)
+def __writeCsvFile(auditType, filePath, record, writeHeader):
+    operation = 'w' if writeHeader else 'a'
+
+    with open(filePath, operation, newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=record.keys())
+        writer.writeheader() if writeHeader else writer.writerow(record)
 
 
 class InvalidConfigError(AuditClientError):
