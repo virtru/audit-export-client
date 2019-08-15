@@ -1,4 +1,4 @@
-import argparse, logging, sys, os, iso8601
+import argparse, logging, iso8601
 from . import utils
 from .auditclient import AuditClient
 

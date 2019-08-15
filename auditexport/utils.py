@@ -1,4 +1,6 @@
-import configparser, datetime, time, os, json, sys, csv, pathlib, logging, socket, re
+import os, time, datetime
+import json, csv, configparser, logging
+import logging, socket, re
 from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
