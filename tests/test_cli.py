@@ -101,7 +101,7 @@ def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_respo
     mock_utils.exportToJson.assert_called_with(
         'some-json', mock_response['data'])
     mock_utils.exportToCsv.assert_called_with(
-        'some-csv', mock_response['data'])
+        'some-csv', mock_response['data'], {})
     mock_utils.exportToSysLog.assert_called_with(
         'some-syslog', '514', mock_utils.configSysLogger('some-syslog', '514'), mock_response['data'])
 
