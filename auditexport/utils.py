@@ -107,9 +107,9 @@ def pre_export(fileFormat, records):
 def exportToJson(pathToFolder, records):
     preparedRecords = pre_export('json', records)
 
-    fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
+    fileName = str(datetime.datetime.utcnow().isoformat()) + '.json'
     fn = os.path.join(pathToFolder, fileName)
-    with open(fn, "w") as f:
+    with open(fn, 'w') as f:
         json.dump(preparedRecords, f, sort_keys=True,
                   indent=4, separators=(',', ': '))
 
@@ -119,15 +119,15 @@ def exportToCsv(pathToFolder, records, writeHeaders):
 
     for record in preparedRecords:
         auditType = record['type']
-        fileName = auditType + ".csv"
+        fileName = auditType + '.csv'
         filePath = os.path.join(pathToFolder, fileName)
-        
-        if record['type'] not in writeHeaders:
-            writeHeaders[record['type']] = True
-        elif writeHeaders[record['type']]:
-            writeHeaders[record['type']] = False
 
-        __writeCsvFile(auditType, filePath, record, writeHeaders[record['type']])
+        # Write header only once for each auditType
+        writeHeader = (
+            writeHeaders[record['type']]) = (
+                record['type'] not in writeHeaders)
+
+        __writeCsvFile(auditType, filePath, record, writeHeader)
 
 
 def exportToSysLog(host, port, syslogger, records):
@@ -138,8 +138,8 @@ def exportToSysLog(host, port, syslogger, records):
         formattedRecord = __flatten(record)
 
         # Construct structured data
-        formattedStructData = " ".join(
-            ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
+        formattedStructData = ' '.join(
+            ['='.join([key, '"{}"'.format(str(val))]) for key, val in formattedRecord.items()])
 
         adapter = logging.LoggerAdapter(
             syslogger, {'data': str(formattedStructData)})
