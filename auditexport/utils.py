@@ -1,14 +1,6 @@
-import configparser
-import datetime
-import time
-import os
-import json
-import sys
-import csv
-import pathlib
-import logging
-import socket
-import re
+import os, time, datetime
+import json, csv, configparser, logging
+import logging, socket, re
 from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
@@ -108,39 +100,51 @@ def saveNextPageCursor(nextPageCursor, lastRecordSaved):
     with open(CURSOR_PATH, 'w') as cursorFile:
         cursorConfig.write(cursorFile)
 
+def pre_export(fileFormat, records):
+    logger.debug('exporting records to ' + fileFormat + '.....')
+    preparedRecords = [flattenObjectProp(record) for record in records]
+    return preparedRecords
+
 
 def exportToJson(pathToFolder, records):
-    logger.debug('exporting records to json.....')
-    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
+    preparedRecords = pre_export('json', records)
 
-    fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
+    fileName = str(datetime.datetime.utcnow().isoformat()) + '.json'
     fn = os.path.join(pathToFolder, fileName)
-    with open(fn, "w") as f:
+    with open(fn, 'w') as f:
         json.dump(preparedRecords, f, sort_keys=True,
                   indent=4, separators=(',', ': '))
 
 
-def exportToCsv(pathToFolder, records):
-    logger.debug('exporting records to csv.....')
-    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
+def exportToCsv(pathToFolder, records, writeHeaders):
+    preparedRecords = pre_export('csv', records)
 
     for record in preparedRecords:
         auditType = record['type']
-        fileName = auditType + ".csv"
-        __writeCsvFile(auditType, pathToFolder, fileName, record)
+        fileName = auditType + '.csv'
+        filePath = os.path.join(pathToFolder, fileName)
+
+        # Write header only once for each audit type
+        # if first encounter with audit type, write new header and file
+        if auditType not in writeHeaders:
+            writeHeaders[auditType] = True
+        # else if audit type encountered at least once before, no need to write header
+        elif writeHeaders[auditType]:
+            writeHeaders[auditType] = False
+
+        __writeCsvFile(auditType, filePath, record, writeHeaders[auditType])
 
 
 def exportToSysLog(host, port, syslogger, records):
-    logger.debug('exporting to records to syslog......')
-    preparedRecords = list(map(lambda record: flattenObjectProp(record), records))
+    preparedRecords = pre_export('syslog', records)
 
     for record in preparedRecords:
         # Flatten out dictionary
         formattedRecord = __flatten(record)
 
         # Construct structured data
-        formattedStructData = " ".join(
-            ["=".join([key, "\"{}\"".format(str(val))]) for key, val in formattedRecord.items()])
+        formattedStructData = ' '.join(
+            ['='.join([key, '"{}"'.format(str(val))]) for key, val in formattedRecord.items()])
 
         adapter = logging.LoggerAdapter(
             syslogger, {'data': str(formattedStructData)})
@@ -178,12 +182,13 @@ def __flatten(dic):
     return dic
 
 
-def __writeCsvFile(auditType, pathToFolder, fileName, record):
-    filePath = os.path.join(pathToFolder, fileName)
-    with open(filePath, 'a', newline='') as csvfile:
-        fieldnames = record.keys()
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
+def __writeCsvFile(auditType, filePath, record, writeHeader):
+    operation = 'w' if writeHeader else 'a'
+
+    with open(filePath, operation, newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=record.keys())
+        if writeHeader:
+            writer.writeheader()
         writer.writerow(record)
 
 
