@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/virtru/virtru-audit-export-client/compare/master...HEAD)
 
-## [2.0.3](https://github.com/virtru/audit-export-client/pull/10) - 2019-08-14
+## [2.0.3](https://github.com/virtru/audit-export-client/pull/10) - 2019-08-16
 ## Fixed
   - Fix export to csv so that exported file does not duplicate csv headers
   - Rewrite csv file to path specified at runtime instead of appending
