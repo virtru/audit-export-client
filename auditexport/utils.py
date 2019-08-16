@@ -124,12 +124,15 @@ def exportToCsv(pathToFolder, records, writeHeaders):
         fileName = auditType + '.csv'
         filePath = os.path.join(pathToFolder, fileName)
 
-        # Write header only once for each auditType
-        writeHeader = (
-            writeHeaders[record['type']]) = (
-                record['type'] not in writeHeaders)
+        # Write header only once for each audit type
+        # if first encounter with audit type, write new header and file
+        if auditType not in writeHeaders:
+            writeHeaders[auditType] = True
+        # else if audit type encountered at least once before, no need to write header
+        elif writeHeaders[auditType]:
+            writeHeaders[auditType] = False
 
-        __writeCsvFile(auditType, filePath, record, writeHeader)
+        __writeCsvFile(auditType, filePath, record, writeHeaders[auditType])
 
 
 def exportToSysLog(host, port, syslogger, records):
@@ -184,7 +187,9 @@ def __writeCsvFile(auditType, filePath, record, writeHeader):
 
     with open(filePath, operation, newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=record.keys())
-        writer.writeheader() if writeHeader else writer.writerow(record)
+        if writeHeader:
+            writer.writeheader()
+        writer.writerow(record)
 
 
 class InvalidConfigError(AuditClientError):
