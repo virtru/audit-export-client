@@ -12,7 +12,7 @@ import re
 from logging.handlers import SysLogHandler
 from .auditclient.errors import AuditClientError
 
-EXPORT_DIR = '.auditexport'
+EXPORT_DIR = 'bookmark'
 BOOK_MARK_PATH = '%s/bookmark.ini' % (EXPORT_DIR)
 
 

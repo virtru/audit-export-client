@@ -50,7 +50,7 @@ to export audit records to syslog, provide a host and a port
 
 to pull records since the last time the script was run, set the bookmark option
 ### `--bookmark` or `-b`
-you can also provide a `bookmark.ini` file, in  the `.auditexport` directory, which will tell the script where to start pulling records
+you can also provide a `bookmark.ini` file, in  the `bookmark` directory, which will tell the script where to start pulling records
 
 ```ini
 #bookmark.ini
