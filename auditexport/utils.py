@@ -98,7 +98,7 @@ def saveNextPageStartKey(nextPageStartKey):
 def exportToJson(pathToFolder, records):
     logger.debug('exporting records to json.....')
 
-    fileName = str(datetime.datetime.utcnow().isoformat()) + ".json"
+    fileName = str(datetime.datetime.utcnow().isoformat()).replace(":","_") + ".json"
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, "w") as f:
         json.dump(records, f, sort_keys=True,
