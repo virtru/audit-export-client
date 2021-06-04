@@ -5,3 +5,4 @@ __pycache__/*
 *.auditexport
 *.pytest_cache
 .cache
+*.ini

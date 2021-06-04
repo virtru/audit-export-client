@@ -42,6 +42,9 @@ to specify start/end dates for pulling records.  **`NOTE:`** all dates must be i
 ### `--start=<start-date>`  `--end=<end-date>`
 
 to export audit records to json, provide a path to a folder
+### `--safe-filename`
+
+to use a system safe filename. Alphanumeric and hyphens.
 ### `--json=<path-to-folder>`
 
 to export audit records to csv, provide a path to a folder

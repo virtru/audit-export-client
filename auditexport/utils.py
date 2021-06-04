@@ -1,4 +1,4 @@
-import os, time, datetime
+import os, time, datetime, platform
 import json, csv, configparser, logging
 import logging, socket, re
 from logging.handlers import SysLogHandler
@@ -106,10 +106,14 @@ def pre_export(fileFormat, records):
     return preparedRecords
 
 
-def exportToJson(pathToFolder, records):
+def exportToJson(pathToFolder, records, safeFilename):
     preparedRecords = pre_export('json', records)
+    date = str(datetime.datetime.utcnow().isoformat())
+    
+    if safeFilename or platform.system():
+        date = re.sub(r'[^a-zA-Z0-9]+', '-', date)
 
-    fileName = str(datetime.datetime.utcnow().isoformat()) + '.json'
+    fileName = date + '.json'
     fn = os.path.join(pathToFolder, fileName)
     with open(fn, 'w') as f:
         json.dump(preparedRecords, f, sort_keys=True,

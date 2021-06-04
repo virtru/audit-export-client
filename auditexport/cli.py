@@ -21,6 +21,12 @@ def main():
                         dest='endDate',
                         default='2100-01-01',
                         required=False)
+    parser.add_argument('--safe-filename',
+                        help='Use a system safe filename. Alphanumeric and hyphens.',
+                        dest='safeFilename',
+                        action='store_true',
+                        default=False,
+                        required=False)
     parser.add_argument('--csv',
                         help='CSV output folder.  If defined CSV will be exported',
                         dest='csv',
@@ -103,6 +109,7 @@ def process(args, auditclient, utils):
     iso8601.parse_date(queryStart)
     iso8601.parse_date(queryEnd)
 
+    safeFilename = args.safeFilename
     jsonFolderPath = args.json
     csvFolderPath = args.csv
     syslogHost = args.sysloghost
@@ -146,7 +153,7 @@ def process(args, auditclient, utils):
             break
 
         if(jsonFolderPath and len(records)):
-            utils.exportToJson(jsonFolderPath, records)
+            utils.exportToJson(jsonFolderPath, records, safeFilename)
         if(csvFolderPath and len(records)):
             utils.exportToCsv(csvFolderPath, records, writeHeaders)
         if(syslogHost is not None and len(records)):
