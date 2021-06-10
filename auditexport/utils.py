@@ -110,7 +110,7 @@ def exportToJson(pathToFolder, records, safeFilename):
     preparedRecords = pre_export('json', records)
     date = str(datetime.datetime.utcnow().isoformat())
     
-    if safeFilename or platform.system():
+    if safeFilename or platform.system() == 'Windows':
         date = re.sub(r'[^a-zA-Z0-9]+', '-', date)
 
     fileName = date + '.json'
