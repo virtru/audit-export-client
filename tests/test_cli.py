@@ -46,7 +46,7 @@ def mock_audit_client(mock_response):
 
 
 MockArgs = namedtuple(
-    'Args', 'startDate endDate csv json sysloghost syslogport useCursor limit')
+    'Args', 'startDate endDate csv json sysloghost syslogport useCursor limit safeFilename')
 
 
 @pytest.fixture
