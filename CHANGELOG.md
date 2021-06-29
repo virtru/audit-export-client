@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased](https://github.com/virtru/virtru-audit-export-client/compare/master...HEAD)
-## [2.0.4](https://github.com/virtru/audit-export-client/pull/10) - 2021-06-29
+## [2.0.4](https://github.com/virtru/audit-export-client/pull/17) - 2021-06-29
 ## Fixed
   - Fix export to json so that exported file has Windows-safe filename
 
