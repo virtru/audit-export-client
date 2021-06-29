@@ -46,7 +46,7 @@ def mock_audit_client(mock_response):
 
 
 MockArgs = namedtuple(
-    'Args', 'startDate endDate csv json sysloghost syslogport useCursor limit')
+    'Args', 'startDate endDate csv json sysloghost syslogport useCursor limit safeFilename')
 
 
 @pytest.fixture
@@ -73,7 +73,7 @@ def mock_utiles_checkrecords():
 
 def test_process_succeeds_no_options(mock_utils, mock_audit_client):
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=100)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=100, safeFilename=False)
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.getnextPageCursor.assert_called_with()
     mock_utils.saveNextPageCursor.assert_not_called()
@@ -93,13 +93,13 @@ def test_process_succeeds_no_options(mock_utils, mock_audit_client):
 
 def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_response):
     args = MockArgs(startDate='2017', limit=150,
-                    endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useCursor='some-bmk')
+                    endDate='2018', csv='some-csv', json='some-json', sysloghost='some-syslog', syslogport='514', useCursor='some-bmk', safeFilename=True)
     cli.process(args, mock_audit_client, mock_utils)
     mock_utils.checkRecords.assert_called_with([{'recordId': 'some-record-id'}], 'some-record-id')
     mock_utils.getnextPageCursor.assert_called_with()
     mock_utils.saveNextPageCursor.assert_called_with(CURSOR['nextPageCursor'], SOME_RECORD_ID_1)
     mock_utils.exportToJson.assert_called_with(
-        'some-json', mock_response['data'])
+        'some-json', mock_response['data'], True)
     mock_utils.exportToCsv.assert_called_with(
         'some-csv', mock_response['data'], {})
     mock_utils.exportToSysLog.assert_called_with(
@@ -109,7 +109,7 @@ def test_process_succeeds_with_options(mock_utils, mock_audit_client, mock_respo
 def test_process_with_cursor(mock_audit_client, mock_utils):
     mock_utils.getnextPageCursor.return_value = CURSOR
     args = MockArgs(startDate='2017', limit=200,
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True, safeFilename=False)
     cli.process(args, mock_audit_client, mock_utils)
     mock_audit_client.fetchRecords.assert_called_with({
         'method': 'GET',
@@ -124,7 +124,7 @@ def test_process_with_cursor(mock_audit_client, mock_utils):
 
 def test_process_with_no_new_records_to_save(mock_utiles_checkrecords, mock_audit_client):
     args = MockArgs(startDate='2017',
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=100)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, limit=100, safeFilename=False)
     cli.process(args, mock_audit_client, mock_utiles_checkrecords)
     mock_utiles_checkrecords.saveNextPageCursor.assert_not_called()
     assert mock_audit_client.fetchRecords.call_count == 1
@@ -154,7 +154,7 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
         mock_response_1, mock_response_2]
 
     args = MockArgs(startDate='2017', limit=100,
-                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False)
+                    endDate='2018', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=False, safeFilename=False)
     cli.process(args, mock_audit_client, mock_utils)
     assert mock_audit_client.fetchRecords.call_count == 2
     assert mock_utils.saveNextPageCursor.call_count == 0
@@ -164,6 +164,6 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
 
 def test_process_throws_on_invalid_date(mock_audit_client, mock_utils):
     args = MockArgs(startDate='201ask', limit=False,
-                    endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
+                    endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True, safeFilename=False)
     with pytest.raises(iso8601.ParseError):
         cli.process(args, mock_audit_client, mock_utils)
