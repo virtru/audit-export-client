@@ -164,6 +164,6 @@ def test_process_with_next_pagesStartkey(mock_audit_client, mock_utils, mock_res
 
 def test_process_throws_on_invalid_date(mock_audit_client, mock_utils):
     args = MockArgs(startDate='201ask', limit=False,
-                    endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True)
+                    endDate='adlk2', csv=None, json=None, sysloghost=None, syslogport=None, useCursor=True, safeFilename=False)
     with pytest.raises(iso8601.ParseError):
         cli.process(args, mock_audit_client, mock_utils)
