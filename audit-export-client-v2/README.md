@@ -44,11 +44,28 @@ Run the script using:
 you must provide a `.ini` file with the following configuration:
 
 ```ini
-[ApiInfo]
+[DEFAULT]
 apiTokenId=<apiTokenId>
 apiTokenSecret=<apiTokenSecret>
-apiHost="api.virtru.com"
-apiPath="/audit/api/v1/events"
+```
+
+```auditclient.py 
+# Read configuration file
+config = configparser.ConfigParser() 
+
+# current config, udate with the path if an error occurs
+config.read('config.ini')  
+# Update with the actual path to your config.ini
+config.read('/Users/first.lastname/Desktop/Audit_V2/config.ini') 
+
+# Set environment variables from config
+api_token = config['DEFAULT']['API_TOKEN']
+api_token_id = config['DEFAULT']['API_TOKEN_ID']
+
+method = "GET"
+path = "/audit/api/v1/events"
+queryParams = ""
+host = "api.virtru.com"
 ```
 
 ## Options
