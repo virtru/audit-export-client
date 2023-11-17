@@ -57,7 +57,7 @@ the start/end dates are hard coded to pull records automatically.  **`NOTE:`** t
 
 ## 2
 uncomment the date prompt to specify start/end dates for pulling records.  **`NOTE:`** all dates must be in a valid **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
-### `--start=<start-date>`  `--end=<end-date>`
+
 
 ### `-See the 'audit_output' path for the audit file`
 
