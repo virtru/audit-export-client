@@ -31,16 +31,6 @@ python3 -m pip --version
 pip3 install pandas
 ````
 
-
-# Update with the actual path to your config.ini
-# example:
-config.read('/Users/first.lastname/Desktop/Audit_V2/config.ini') 
-
-
-Run the script using:
-/opt/homebrew/bin/python3 /Users/first.lastname/Desktop/auditclient.py
-
-
 you must provide a `.ini` file with the following configuration:
 
 ```ini
@@ -48,6 +38,16 @@ you must provide a `.ini` file with the following configuration:
 apiTokenId=<apiTokenId>
 apiTokenSecret=<apiTokenSecret>
 ```
+# Current config
+config.read('config.ini') 
+
+# Update with the actual path to your config.ini
+# example:
+config.read('/Users/first.lastname/Desktop/Audit_V2/config.ini') 
+
+Run the script using:
+/opt/homebrew/bin/python3 /Users/first.lastname/Desktop/auditclient.py
+you must provide a `.py` file with the following configuration:
 
 ```auditclient.py 
 # Read configuration file
