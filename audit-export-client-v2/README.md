@@ -45,7 +45,7 @@ you must provide the `auditclient.py` file with the following configuration:
 # Read configuration file
 config = configparser.ConfigParser() 
 
-# current config, udate with the path if an error occurs
+# current config, update with the path if an error occurs
 config.read('config.ini')  
 # Update with the actual path to your config.ini
 config.read('/Users/first.lastname/Desktop/Audit_V2/config.ini') 
@@ -64,11 +64,10 @@ Run the script using:
 ```bash 
 /opt/homebrew/bin/python3 /Users/first.lastname/Desktop/auditclient.py
 ````
-## Options
-## 1
+## Option 1:
 the start/end dates are hard coded to pull records automatically.  **`NOTE:`** the end date is current date and time; the start date is now - 365 days **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
 
-## 2
+## Option 2:
 uncomment the date prompt to specify start/end dates for pulling records.  **`NOTE:`** all dates must be in a valid **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
 
 
