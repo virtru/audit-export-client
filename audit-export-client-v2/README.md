@@ -32,23 +32,15 @@ pip3 install pandas
 ````
 
 you must provide a `.ini` file with the following configuration:
-
+# Current config
 ```ini
 [DEFAULT]
 apiTokenId=<apiTokenId>
 apiTokenSecret=<apiTokenSecret>
 ```
-# Current config
-config.read('config.ini') 
 
-# Update with the actual path to your config.ini
-# example:
-config.read('/Users/first.lastname/Desktop/Audit_V2/config.ini') 
-
-Run the script using:
-/opt/homebrew/bin/python3 /Users/first.lastname/Desktop/auditclient.py
-you must provide a `.py` file with the following configuration:
-
+you must provide the `auditclient.py` file with the following configuration:
+# Current auditclient.py
 ```auditclient.py 
 # Read configuration file
 config = configparser.ConfigParser() 
@@ -67,7 +59,11 @@ path = "/audit/api/v1/events"
 queryParams = ""
 host = "api.virtru.com"
 ```
+Run the script using:
 
+```bash 
+/opt/homebrew/bin/python3 /Users/first.lastname/Desktop/auditclient.py
+````
 ## Options
 ## 1
 the start/end dates are hard coded to pull records automatically.  **`NOTE:`** the end date is current date and time; the start date is now - 365 days **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
