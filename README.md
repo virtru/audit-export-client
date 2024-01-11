@@ -35,8 +35,7 @@ pip3 install pandas
 ```
 ## MacOS
 This requires **`python 3.5.0`** or higher
-```bash 
-brew upgrade
+
 ```bash
 brew upgrade
 ````
