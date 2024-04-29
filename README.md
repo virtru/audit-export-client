@@ -1,29 +1,45 @@
-# Virtru Audit Export Client
+# Virtru Audit Export Client v2
 
 Python client for pulling audit data from the Virtru audit API.
 
 ## Getting started
+## This application currently works on MacOS
 This requires **`python 3.5.0`** or higher
 
-install pipenv using `brew`
-
 ```bash 
-brew install pipenv
+brew upgrade
+````
+```bash 
+brew update
+````
+```bash 
+brew upgrade openssl
+````
+```bash 
+brew install python
+````
+```bash 
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+````
+```bash 
+python3 -m pip --version
+````
+```bash 
+/usr/bin/python3 -m pip install requests
+````
+```bash 
+pip3 install pandas
 ````
 
-install package dependencies
 
-```bash
-pipenv install --three
-```
+# Update with the actual path to your config.ini
+# example:
+config.read('/Users/first.lastname/Desktop/audit-export-client-v2/config.ini') 
 
-## Usage
 
-run the script using:
+Run the script using:
+/opt/homebrew/bin/python3 /Users/first.lastname/Desktop/audit-export-client-v2/auditclient.py
 
-```bash
-pipenv run start
-```
 
 you must provide a `.ini` file with the following configuration:
 
@@ -31,35 +47,22 @@ you must provide a `.ini` file with the following configuration:
 [ApiInfo]
 apiTokenId=<apiTokenId>
 apiTokenSecret=<apiTokenSecret>
-apiHost=audit.virtru.com
-apiPath=/api/messages
+apiHost="api.virtru.com"
+apiPath="/audit/api/v1/events"
 ```
 
 ## Options
-to specify start/end dates for pulling records.  **`NOTE:`** all dates must be in a valid **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
+## 1
+the start/end dates are hard coded to pull records automatically.  **`NOTE:`** the end date is current date and time; the start date is now - 365 days **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
+
+## 2
+uncomment the date prompt to specify start/end dates for pulling records.  **`NOTE:`** all dates must be in a valid **`ISO 8601`** format. Currently default to `start=2010-01-01` `end=2100-01-01`:
 ### `--start=<start-date>`  `--end=<end-date>`
 
-to export audit records to json, provide a path to a folder
-### `--json=<path-to-folder>`
+### `-See the 'audit_output' path for the audit file`
 
-to export audit records to csv, provide a path to a folder
-### `--csv=<path-to-folder>`
+the output directory contain the human readable files
+### `--csv`
 
-to export audit records to syslog, provide a host and a port
-### `--sysloghost=0.0.0.0 --syslogport=514`
-
-to pull records since the last time the script was run, set the bookmark option
-### `--bookmark` or `-b`
-you can also provide a `bookmark.ini` file, in  the `bookmark` directory, which will tell the script where to start pulling records
-
-```ini
-#bookmark.ini
-
-[next-page-start-key]
-nextpagestartkey=<next-page-start-index>
-
-```
-
-for verbose logging, use the option:
-### `--verbose` or `-v`
-
+the output directory contain the machine readable files
+### `--json`
