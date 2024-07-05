@@ -5,8 +5,11 @@ import requests
 import hmac
 import os
 import configparser
+<<<<<<< HEAD
 import hashlib
 import urllib.parse
+=======
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
 
 # Read configuration file
 config = configparser.ConfigParser()
@@ -34,8 +37,12 @@ def generate_date_intervals(start_date, end_date, delta):
         current_date = interval_end
 
 # Parsing start and end dates
+<<<<<<< HEAD
 #YYYY-MM-DD
 start_date_str = '2024-07-01T11:00:00Z'  # This can be changed to any starting date
+=======
+start_date_str = '2024-01-01T00:00:00Z'  # This can be changed to any starting date
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
 end_date_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT00:00:00Z')
 
 start_date = datetime.fromisoformat(start_date_str.rstrip('Z'))
@@ -66,6 +73,7 @@ content-type;date;host
 
 signature = hmac.new(api_token.encode(), messageToSign.encode(), sha256).hexdigest()
 
+<<<<<<< HEAD
 def _hash_string(string_to_hash):
     """Build an unseeded hash of a string."""
     return hashlib.sha256(str.encode(string_to_hash)).hexdigest()
@@ -102,6 +110,9 @@ def _build_string_to_hash(headers, path, query, method, body):
 
 def fetch_data(start_date, end_date, api_token, api_token_id, queryParams, output_dir='audit_output'):
 
+=======
+def fetch_data(start_date, end_date, api_token, api_token_id, output_dir='audit_output'):
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
     # Initialize an empty list to store data for each API request within a specific date range.
     # This list will collect the data retrieved from the API response for the given date interval
     # and will be reset for each new interval in the larger loop in the main part of the script.
@@ -117,6 +128,7 @@ def fetch_data(start_date, end_date, api_token, api_token_id, queryParams, outpu
         # Generate the body hash for each request
         bodyHex = sha256(str("").encode()).hexdigest()
 
+<<<<<<< HEAD
         # Add bookmark to queryParams if it exists
         if nextBookmark is not None:
             queryParams = f"bookmark={urllib.parse.quote(nextBookmark)}&"
@@ -156,6 +168,33 @@ def fetch_data(start_date, end_date, api_token, api_token_id, queryParams, outpu
 
         try:
             response = requests.request(method, f"https://{host}{path}", headers=headers, params=params)
+=======
+        # Create message to sign for each request
+        messageToSign = f"{method}\n{path}\n{queryParams}\ncontent-type:application/json; charset=utf-8\ndate:{now}\nhost:{host}\n\ncontent-type;date;host\n{bodyHex}"
+
+        # Generate signature for each request
+        signature = hmac.new(api_token.encode(), messageToSign.encode(), sha256).hexdigest()
+
+        # Prepare the headers
+        headers = {
+            'Authorization': 'HMAC {0}:{1}'.format(api_token_id, signature),
+            'accept': 'application/json',
+            'Date': now,
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-Auth-Signedheaders': 'content-type;date;host',
+            'Host': host,
+            'X-Request-Start-Date': start_date,
+            'X-Request-End-Date': end_date,
+        }
+
+        if nextBookmark is not None:
+            headers['bookmark'] = nextBookmark
+
+        try:
+            print(f"Request headers: {headers}")
+
+            response = requests.request(method, f"https://{host}{path}", headers=headers)
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
             if response.status_code != 200:
                 print(f"Error fetching data: {response.status_code}, {response.text}")
                 break
@@ -168,7 +207,10 @@ def fetch_data(start_date, end_date, api_token, api_token_id, queryParams, outpu
             nextBookmark = response_data.get('bookmarks', {}).get('nextBookmark')
             current_iteration += 1
             if not nextBookmark:
+<<<<<<< HEAD
                 print("No more bookmarks found. Stopping...")
+=======
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
                 break
 
         except requests.exceptions.RequestException as e:
@@ -231,13 +273,20 @@ for interval_start, interval_end in generate_date_intervals(start_date, end_date
     formatted_end_date = interval_end.isoformat() + 'Z'
 
     # Fetch data for the current interval
+<<<<<<< HEAD
     interval_data = fetch_data(formatted_start_date, formatted_end_date, api_token, api_token_id, queryParams)
+=======
+    interval_data = fetch_data(formatted_start_date, formatted_end_date, api_token, api_token_id)
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
 
     # Write data if it exists for the day
     # Check if data exists for the day, and if so, write to files
     if interval_data:
         date_str = interval_start.strftime('%Y-%m-%d')
+<<<<<<< HEAD
         print(f"Number of records received for {date_str}: {len(interval_data)}")
+=======
+>>>>>>> c698d84b32e6b5cd24b01480015b43f335e5237f
         write_data_to_files(interval_data, date_str)
     else:
         print(f"No data received for interval starting {formatted_start_date}")
