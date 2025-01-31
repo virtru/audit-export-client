@@ -35,13 +35,22 @@ def generate_date_intervals(start_date, end_date, delta):
 
 # Parsing start and end dates
 #YYYY-MM-DD
-start_date_str = '2024-07-01T11:00:00Z'  # This can be changed to any starting date
-end_date_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT00:00:00Z')
+start_date_str = '2025-01-01T00:00:00Z'  # This can be changed to any starting date
+end_date_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ') # Get the current UTC date and time as an ISO 8601 formatted string (YYYY-MM-DDTHH:MM:SSZ).
+
 
 start_date = datetime.fromisoformat(start_date_str.rstrip('Z'))
 print("Start Date: ", start_date)
 end_date = datetime.fromisoformat(end_date_str.rstrip('Z'))
+
+# Set the interval length for data fetching. Adjust the timedelta value 
+# to change the frequency of data retrieval. Uncomment the desired interval.
 interval_length = timedelta(days=1)  # Example: 1 day interval
+#interval_length = timedelta(hours=6)  # Fetches data in 6-hour chunks
+#interval_length = timedelta(days=7)   # Fetches data in 1-week chunks
+#interval_length = timedelta(hours=1)  # Fetches data in 1-hour chunks
+#interval_length = timedelta(seconds=30)  # Fetches data in 30-second chunks
+
 print("End Date: ", end_date)
 
 
