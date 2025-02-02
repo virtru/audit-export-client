@@ -1,23 +1,55 @@
-from datetime import datetime,timezone,timedelta
-from write_to_file import write_to_json, write_to_csv
+from datetime import datetime,timezone,timedelta # Manages date and time operations, including intervals
+from write_to_file import write_to_json, write_to_csv # Custom functions for writing data into JSON and CSV files
 from hashlib import sha256
-import requests
-import hmac
-import os
-import configparser
-import hashlib
-import urllib.parse
+import requests # Enables HTTP requests to call external APIs
+import hmac # Generates HMAC signatures for verifying the authenticity of API requests
+import os # Provides functions for interacting with the operating system (e.g., file/directory operations)
+import configparser # Reads and parses configuration files (e.g., config.ini) to load settings
+import hashlib # Provides secure hash algorithms (e.g., SHA256) for creating hash values
+import urllib.parse # Handles URL parsing and encoding, ensuring query parameters are properly formatted
+import logging  # Used to record events, errors, and debug information to a log file
+import time # Provides time-related functions (e.g., sleep) for managing script execution
+
+
+
+# Set up logging
+logging.basicConfig(
+    filename='audit_script.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+# Load configuration
+config = configparser.ConfigParser()
+config_file = 'config.ini'
 
 # Read configuration file
-config = configparser.ConfigParser()
 
+
+if not os.path.exists(config_file):
+    logging.error("Config file not found. Please ensure 'config.ini' exists.")
+    exit(1)
+
+config.read(config_file)   # Update with the actual path to your config.ini
 # Example  /Users/first.lastname/Desktop/audit-export-client-v2/config.ini
-config.read('config.ini')   # Update with the actual path to your config.ini
 
-# Set environment variables from config
-api_token = config['DEFAULT']['API_TOKEN']
-api_token_id = config['DEFAULT']['API_TOKEN_ID']
+try:
+    # Set environment variables from config
+    api_token = config['DEFAULT']['API_TOKEN']
+    api_token_id = config['DEFAULT']['API_TOKEN_ID']
+except KeyError as e:
+    logging.error(f"Missing configuration key: {e}")
+    exit(1)
 
+# Check if both tokens are non-empty and log a success message.
+if api_token.strip() and api_token_id.strip():
+    logging.info("API token and token ID are set correctly.")
+else:
+    logging.error("One or both API token and token ID are empty.")
+    exit(1)
+
+# Set up API request parameters
+# API Constants
 method = "GET"
 path = "/audit/api/v1/events"
 queryParams = ""
@@ -134,11 +166,12 @@ def fetch_data(start_date, end_date, api_token, api_token_id, queryParams, outpu
 
         # Prepare the headers
         headers = {
-            'accept': 'application/json',
-            'date': now,
-            'content-type': 'application/json; charset=utf-8',
-            'host': host,
-            'X-Request-Limit': '1000'
+            'accept': 'application/json', # Tells the server that the client expects a response in JSON format.
+            'date': now, # Provides the current GMT timestamp; this is used for request validation and signing.
+            'content-type': 'application/json; charset=utf-8', # Indicates that the request body is formatted as JSON using UTF-8 encoding.
+            'host': host, # Specifies the hostname of the API server being targeted by the request.
+            # Requests that the API returns a maximum of 1000 records per request to limit the response size.
+            'X-Request-Limit': '1000' # Specifies the maximum number of records to return in a single response.
         }
 
         # Generate signature for each request
@@ -205,6 +238,92 @@ def create_directories(base_dir='audit_output'):
  
 create_directories()  # Call this function at the beginning of your main script
 
+
+# Global counter for files written
+total_files_written = 0
+
+def make_request_with_retries(url, headers, params, retries=3, backoff_factor=2):
+    for attempt in range(retries):
+        try:
+            response = requests.request("GET", url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.ConnectionError as ce:
+            logging.error(f"Lost connection on attempt {attempt + 1}: {ce}")
+            if attempt < retries - 1:
+                wait_time = backoff_factor ** attempt
+                logging.info(f"Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                return None
+        except requests.exceptions.RequestException as e:
+            logging.warning(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:
+                wait_time = backoff_factor ** attempt
+                logging.info(f"Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                logging.error(f"Request failed after {retries} attempts.")
+                return None
+
+def write_data_to_files(data, date_str, base_dir='audit_output'):
+    files_written = 0
+    try:
+        json_file_path = os.path.join(base_dir, 'json_files', f'{date_str}.json')
+        csv_file_path = os.path.join(base_dir, 'csv_files', f'{date_str}.csv')
+
+        if not os.path.exists(json_file_path):
+            write_to_json(data, json_file_path)
+            logging.info(f"Data for {date_str} written to {json_file_path}")
+            files_written += 1
+        else:
+            logging.info(f"JSON file for {date_str} already exists. Skipping.")
+
+        if not os.path.exists(csv_file_path):
+            write_to_csv(data, csv_file_path)
+            logging.info(f"Data for {date_str} written to {csv_file_path}")
+            files_written += 1
+        else:
+            logging.info(f"CSV file for {date_str} already exists. Skipping.")
+    except Exception as e:
+        logging.error(f"Error writing files for {date_str}: {e}")
+    return files_written
+
+def main():
+    global total_files_written
+    # Assume start_date, end_date, interval_length, and generate_date_intervals are defined elsewhere.
+    for interval_start, interval_end in generate_date_intervals(start_date, end_date, interval_length):
+        formatted_start_date = interval_start.isoformat() + 'Z'
+        formatted_end_date = interval_end.isoformat() + 'Z'
+
+        interval_data = fetch_data(formatted_start_date, formatted_end_date)
+        
+        if interval_data:
+            date_str = interval_start.strftime('%Y-%m-%d')
+            logging.info(f"Records fetched for {date_str}: {len(interval_data)}")
+            total_files_written += write_data_to_files(interval_data, date_str)
+        else:
+            logging.warning(f"No data received for interval starting {formatted_start_date}")
+
+# Execute the main function with error handling that logs interruptions or connection losses.
+try:
+    main()
+except KeyboardInterrupt:
+    logging.error("Script execution was interrupted by the user (KeyboardInterrupt).")
+except requests.exceptions.ConnectionError as ce:
+    logging.error(f"Lost connection: {ce}")
+except Exception as e:
+    logging.error(f"Script encountered an error: {e}")
+else:
+    logging.info(f"Total files written: {total_files_written}")
+    logging.info("Script ran successfully without any errors")
+finally:
+    # Log the end time and total execution time.
+    end_time = datetime.now(timezone.utc)
+    logging.info("Script execution ended at %s", end_time.strftime("%Y-%m-%d %H:%M:%S %Z"))
+    execution_time = end_time - start_time
+    logging.info("Total execution time: %s", execution_time)
+
 # Function to write data to files
 def write_data_to_files(data, date_str, base_dir='audit_output'):
     # Define file paths using the date string for naming
@@ -250,7 +369,6 @@ for interval_start, interval_end in generate_date_intervals(start_date, end_date
         write_data_to_files(interval_data, date_str)
     else:
         print(f"No data received for interval starting {formatted_start_date}")
-
 
 
 print("\n######################################################")
