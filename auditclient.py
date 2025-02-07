@@ -7,6 +7,14 @@ import os
 import configparser
 import hashlib
 import urllib.parse
+from version import VERSION
+
+# 2. Function to get version from Git or fallback to version.py
+SCRIPT_VERSION = VERSION # Update with the actual version of the script
+
+# Display version on the terminal at script start
+#print(f"\n=== Audit Export Client Version: {SCRIPT_VERSION} ===\n") # Uncomment to display the version at the start of the script
+
 
 # Read configuration file
 config = configparser.ConfigParser()
