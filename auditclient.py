@@ -7,6 +7,7 @@ import os
 import configparser
 import hashlib
 import urllib.parse
+import argparse
 from version import VERSION
 
 # 2. Function to get version from Git or fallback to version.py
@@ -26,6 +27,22 @@ config.read('config.ini')   # Update with the actual path to your config.ini
 api_token = config['DEFAULT']['API_TOKEN']
 api_token_id = config['DEFAULT']['API_TOKEN_ID']
 
+# Get output directory from config with fallback default
+config_output_dir = config['DEFAULT'].get('OUTPUT_DIR', 'audit_output')
+
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='Virtru Audit Export Client')
+parser.add_argument('--output-dir', '-o',
+                    default=config_output_dir,
+                    help='Directory to write audit files (default: from config.ini or "audit_output")')
+args = parser.parse_args()
+
+# Set the output directory (CLI takes precedence over config)
+output_dir = args.output_dir
+
+print(f"\n=== Audit Export Client Version: {SCRIPT_VERSION} ===")
+print(f"=== Output Directory: {output_dir} ===\n")
+
 method = "GET"
 path = "/audit/api/v1/events"
 queryParams = ""
@@ -43,7 +60,7 @@ def generate_date_intervals(start_date, end_date, delta):
 
 # Parsing start and end dates
 #YYYY-MM-DD
-start_date_str = '2025-01-01T00:00:00Z'  # This can be changed to any starting date
+start_date_str = '2026-01-01T00:00:00Z'  # This can be changed to any starting date
 end_date_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ') # Get the current UTC date and time as an ISO 8601 formatted string (YYYY-MM-DDTHH:MM:SSZ).
 
 
@@ -211,7 +228,7 @@ def create_directories(base_dir='audit_output'):
     if not os.path.exists(json_dir):
        os.makedirs(json_dir)
  
-create_directories()  # Call this function at the beginning of your main script
+create_directories(output_dir)  # Pass the output directory
 
 # Function to write data to files
 def write_data_to_files(data, date_str, base_dir='audit_output'):
@@ -248,14 +265,14 @@ for interval_start, interval_end in generate_date_intervals(start_date, end_date
     formatted_end_date = interval_end.isoformat() + 'Z'
 
     # Fetch data for the current interval
-    interval_data = fetch_data(formatted_start_date, formatted_end_date, api_token, api_token_id, queryParams)
+    interval_data = fetch_data(formatted_start_date, formatted_end_date, api_token, api_token_id, queryParams, output_dir)
 
     # Write data if it exists for the day
     # Check if data exists for the day, and if so, write to files
     if interval_data:
         date_str = interval_start.strftime('%Y-%m-%d')
         print(f"Number of records received for {date_str}: {len(interval_data)}")
-        write_data_to_files(interval_data, date_str)
+        write_data_to_files(interval_data, date_str, output_dir)  # Pass output_dir
     else:
         print(f"No data received for interval starting {formatted_start_date}")
 
@@ -264,9 +281,9 @@ for interval_start, interval_end in generate_date_intervals(start_date, end_date
 print("\n######################################################")
 print("######################################################")
 print("######################################################")
-print("###                                               ####")
-print("### See the 'audit_output' path for the audit file ###")
-print("###                                               ####")
+print("###                                                ###")
+print(f"### Output written to: {output_dir}")
+print("###                                                ###")
 print("######################################################")
 print("######################################################")
 print("######################################################\n")
