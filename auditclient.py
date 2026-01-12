@@ -60,7 +60,7 @@ def generate_date_intervals(start_date, end_date, delta):
 
 # Parsing start and end dates
 #YYYY-MM-DD
-start_date_str = '2025-01-01T00:00:00Z'  # This can be changed to any starting date
+start_date_str = '2026-01-01T00:00:00Z'  # This can be changed to any starting date
 end_date_str = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ') # Get the current UTC date and time as an ISO 8601 formatted string (YYYY-MM-DDTHH:MM:SSZ).
 
 
