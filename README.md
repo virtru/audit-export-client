@@ -1,6 +1,6 @@
 # Virtru Audit Export Client
 
-Python client for exporting audit event data from the [Virtru Audit API](https://github.com/virtru-corp/audit-api). Fetches events in configurable date intervals and writes them to both JSON and CSV files.
+Python client for exporting audit event data from the [Virtru Audit API](https://api.virtru.com/audit/api/v1/swagger/index.html). Fetches events in configurable date intervals and writes them to both JSON and CSV files.
 
 ## Prerequisites
 
@@ -130,9 +130,9 @@ Each exported event contains an object, action, actor, owner, and client info. B
 
 ## API Documentation
 
-Full API documentation is available via the Swagger spec in the [audit-api repo](https://github.com/virtru-corp/audit-api/blob/main/docs/swagger.yaml).
+Full API documentation is available via the [Swagger UI](https://api.virtru.com/audit/api/v1/swagger/index.html).
 
-The API also supports query filters beyond what this client uses, including `objectType`, `actorId`, `actionType`, `actionResult`, `ownerId`, `objectId`, `ipAddress`, `search`, and `sort`. See the Swagger spec for details.
+The API also supports query filters beyond what this client uses, including `objectType`, `actorId`, `actionType`, `actionResult`, `ownerId`, `objectId`, `ipAddress`, `search`, and `sort`. See the Swagger docs for details.
 
 ## Version
 
